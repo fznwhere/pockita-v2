@@ -102,7 +102,7 @@ function renderModalMethodList() {
     if(!list) return;
     list.innerHTML = '';
     for (let method in pockitaMethods) {
-        const imgData = pockitaMethods[method] || `img/${method.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`;
+        const imgData = pockitaMethods[method] || `assets/img/${method.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`;
         list.innerHTML += `
             <li class="transaction-item" style="padding: 6px 0;">
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -257,7 +257,7 @@ function renderTitipan() {
     if(!container) return;
     container.innerHTML = '';
     if (titipanData.length === 0) {
-        container.innerHTML = `<div class="empty-state" style="padding: 10px 0;"><img src="img/pochita-sleep.png" class="empty-state-img empty-neon-orange" style="width:40px;height:40px;" alt="Kosong">Belum ada riwayat titipan.</div>`;
+        container.innerHTML = `<div class="empty-state" style="padding: 10px 0;"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" style="width:40px;height:40px;" alt="Kosong">Belum ada riwayat titipan.</div>`;
         return;
     }
 
@@ -396,7 +396,7 @@ function renderApp() {
     }
 
     if (displayTransactions.length === 0) {
-        transactionContainer.innerHTML = `<div class="empty-state"><img src="img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Tidak ada riwayat transaksi di kategori ini.</div>`;
+        transactionContainer.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Tidak ada riwayat transaksi di kategori ini.</div>`;
     } else {
         const groupedTx = {};
         displayTransactions.forEach(tx => {
@@ -411,7 +411,7 @@ function renderApp() {
         for (const method in groupedTx) {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'method-group';
-            const imgData = pockitaMethods[method] || `img/${method.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`;
+            const imgData = pockitaMethods[method] || `assets/img/${method.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`;
 
             groupDiv.innerHTML = `<div class="method-group-title"><img src="${imgData}" class="method-icon" onerror="this.outerHTML='<div class=\\'method-icon fallback-icon\\'>${method.charAt(0)}</div>'">${method}</div>`;
             
@@ -727,16 +727,16 @@ function updateStatusBadge(catName, aktual, target) {
     frontBg.style.backgroundColor = defaultColor;
 
     imgEl.style.display = "block";
-    if (target === 0) { badge.innerHTML = "0%"; imgEl.src = "img/mode-aman.png"; return; }
+    if (target === 0) { badge.innerHTML = "0%"; imgEl.src = "assets/img/mode-aman.png"; return; }
 
     const rasio = aktual / target;
     let pct = Math.round(rasio * 100);
     if(pct > 999) pct = ">999"; 
     badge.innerHTML = `${pct}%`;
 
-    if (rasio > 1.0) { imgEl.src = "img/mode-bahaya.png"; } 
-    else if (rasio >= 0.85) { imgEl.src = "img/mode-waspada.png"; } 
-    else { imgEl.src = "img/mode-aman.png"; }
+    if (rasio > 1.0) { imgEl.src = "assets/img/mode-bahaya.png"; } 
+    else if (rasio >= 0.85) { imgEl.src = "assets/img/mode-waspada.png"; } 
+    else { imgEl.src = "assets/img/mode-aman.png"; }
 }
 
 function renderBarChartKomparasi() {
@@ -918,7 +918,7 @@ function hapusPlan(type, id) {
 
 function renderGroupedDebts(list, container, typeStr) {
     if (list.length === 0) {
-        container.innerHTML = `<div class="empty-state" style="padding: 10px 0;"><img src="img/pochita-sleep.png" class="empty-state-img empty-neon-orange" style="width:40px;height:40px;" alt="Kosong">Belum ada daftar ${typeStr}.</div>`;
+        container.innerHTML = `<div class="empty-state" style="padding: 10px 0;"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" style="width:40px;height:40px;" alt="Kosong">Belum ada daftar ${typeStr}.</div>`;
         return;
     }
 
@@ -997,7 +997,7 @@ function renderPlans() {
 
     const listRecur = document.getElementById('list-berulang');
     listRecur.innerHTML = '';
-    if(recurringTemplates.length === 0){ listRecur.innerHTML = `<div class="empty-state"><img src="img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada langganan rutin.</div>`;
+    if(recurringTemplates.length === 0){ listRecur.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada langganan rutin.</div>`;
     } else {
         recurringTemplates.forEach(t => {
             let safeCat = t.category ? t.category.toLowerCase() : 'umum';
@@ -1017,7 +1017,7 @@ function renderPlans() {
 
     const containerGoals = document.getElementById('list-goals');
     containerGoals.innerHTML = '';
-    if(savingsGoals.length === 0){ containerGoals.innerHTML = `<div class="empty-state"><img src="img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada target menabung/tagihan.</div>`;
+    if(savingsGoals.length === 0){ containerGoals.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada target menabung/tagihan.</div>`;
     } else {
         savingsGoals.forEach(g => {
             let collectedAmount = transactions.filter(tx => tx.goalId === g.id).reduce((sum, tx) => sum + tx.amount, 0);
