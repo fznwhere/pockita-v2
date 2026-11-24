@@ -2,18 +2,19 @@
 
 :root {
     --primary-orange: #E85D04;     /* Pochita Orange */
+    --denji-blonde: #CA8A04;       /* Denji's Blonde Hair */
     --secondary-orange: #D4820A;   /* Makima's Control Gold */
     --bg-app: #F8F9FA;             
     --white: #FFFFFF;              
     --text-main: #1A1A24;          
     --text-muted: #8492A6;         
     --income-green: #1B9A59;       /* Public Safety Emerald */
-    --expense-red: #D62828;        /* Power's Crimson */
+    --expense-red: #D62828;        /* Power's Blood Crimson */
     --aki-navy: #255C99;           /* Aki's Katana Navy */
     --reze-violet: #7B3FA0;        /* Reze's Bomb Violet */
     --kobeni-burgundy: #B83358;    /* Kobeni's Anxious Burgundy */
     --steel-teal: #167D7F;         /* Chainsaw Steel Teal */
-    --suit-slate: #3D5265;         /* Public Safety Suit Slate */
+    --suit-slate: #3D5265;         /* Kishibe's Suit Slate */
     --border-color: #EAECEF;       
     --card-shadow: 0 10px 30px rgba(232, 93, 4, 0.07); 
 }
@@ -82,21 +83,21 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .btn-cd-cancel { flex: 1; background: #E6F6EE; color: var(--income-green); border: none; padding: 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 .btn-cd-proceed { flex: 1; background: var(--white); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 
-/* BIBIT-STYLE 8-ICON FEATURE GRID (CHAINSAW MAN PALETTE) */
+/* 8-ICON FEATURE GRID (CHAINSAW MAN CHARACTER PALETTE) */
 .bibit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 8px; }
 .grid-item { background: transparent; border: none; display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; padding: 4px 2px; transition: 0.2s; }
 .grid-item:active { transform: scale(0.93); }
 .grid-icon-box { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
 .grid-item span { font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-align: center; line-height: 1.2; }
 
-.icon-orange { background: #FFF2EC; color: var(--primary-orange); }
-.icon-green { background: #E6F6EE; color: var(--income-green); }
-.icon-blue { background: #EBF3FA; color: var(--aki-navy); }
-.icon-purple { background: #F4ECF8; color: var(--reze-violet); }
-.icon-pink { background: #FCEEF2; color: var(--kobeni-burgundy); }
-.icon-amber { background: #FEF6E6; color: var(--secondary-orange); }
-.icon-cyan { background: #EDF1F5; color: var(--suit-slate); }
-.icon-teal { background: #E6F4F4; color: var(--steel-teal); }
+.icon-pochita { background: #FFF2EC; color: var(--primary-orange); }
+.icon-denji   { background: #FEF9C3; color: var(--denji-blonde); }
+.icon-aki     { background: #EBF3FA; color: var(--aki-navy); }
+.icon-reze    { background: #F4ECF8; color: var(--reze-violet); }
+.icon-kobeni  { background: #FCEEF2; color: var(--kobeni-burgundy); }
+.icon-makima  { background: #FEF6E6; color: var(--secondary-orange); }
+.icon-kishibe { background: #EDF1F5; color: var(--suit-slate); }
+.icon-power   { background: #FDECEC; color: var(--expense-red); }
 
 /* SUBPAGE VIEW HEADER */
 .subpage-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; position: sticky; top: 0; background: rgba(248, 249, 250, 0.92); backdrop-filter: blur(10px); padding: 10px 4px; z-index: 50; }
