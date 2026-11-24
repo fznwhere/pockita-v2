@@ -333,7 +333,7 @@ function renderDailyCyclePage() {
             <div class="sim-metrics-row">
                 <div>Saldo Mati (${cycleConfig.deadPct}%)<br><strong>Rp ${formatRupiah(stats.deadAmount)}</strong></div>
                 <div>Terpakai<br><strong style="color:#FF7B4A;">Rp ${formatRupiah(stats.usedInCycle)}</strong></div>
-                <div>Sisa Aktif<br><strong style="color:#2ECC71;">Rp ${formatRupiah(Math.max(0, stats.remainingCycle))}</strong></div>
+                <div>Sisa Aktif<br><strong style="color:#4ADE80;">Rp ${formatRupiah(Math.max(0, stats.remainingCycle))}</strong></div>
             </div>
         </div>`;
 }
@@ -359,7 +359,7 @@ function updateSimulator() {
     const sisa = income - totalOut;
     const sisaEl = document.getElementById('sim-sisa');
     sisaEl.innerText = `Rp ${formatRupiah(sisa)}`;
-    sisaEl.style.color = sisa < 0 ? '#E74C3C' : '#2ECC71';
+    sisaEl.style.color = sisa < 0 ? '#FF6B6B' : '#4ADE80';
 
     document.getElementById('sim-total-out').innerText = `Rp ${formatRupiah(totalOut)}`;
     document.getElementById('sim-daily-14').innerText = `Rp ${formatRupiah(Math.max(0, Math.floor(sisa / 14)))}`;
@@ -535,7 +535,7 @@ function renderMemberCards() {
     }
 }
 
-// ==================== UANG TITIPAN ====================
+// ==================== UANG TITIPAN (REZE'S BOMB VIOLET) ====================
 document.getElementById('form-titipan').addEventListener('submit', function(e) {
     e.preventDefault();
     const title = document.getElementById('titipan-judul').value;
@@ -611,8 +611,8 @@ function renderTitipan() {
 
         let formattedDate = new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         container.innerHTML += `
-        <div class="person-group" style="border-color: #9b59b6;">
-            <button class="person-header" onclick="toggleTitipan(${t.id})" style="background: #FDF4FF; color: #9b59b6;">
+        <div class="person-group" style="border-color: var(--reze-violet);">
+            <button class="person-header" onclick="toggleTitipan(${t.id})" style="background: #F4ECF8; color: var(--reze-violet);">
                 <span>🛒 ${t.title} <small style="font-weight:normal; color:var(--text-muted); display:block; margin-top:2px;">📅 ${formattedDate}</small></span>
                 <span style="text-align:right;">Sisa: Rp ${formatRupiah(sisa)} ▼</span>
             </button>
@@ -628,7 +628,7 @@ function renderTitipan() {
                     <input type="text" inputmode="numeric" id="titipan-item-price-${t.id}" class="format-uang" placeholder="Harga Rp" required style="flex: 1.5;">
                     <button type="submit">+</button>
                 </form>
-                <button class="btn-delete" style="width:100%; margin-top: 12px; border-radius: 8px; background: #FFF1F2; color: var(--expense-red); height: 38px;" onclick="hapusTitipan(${t.id})">Hapus Sesi Ini</button>
+                <button class="btn-delete" style="width:100%; margin-top: 12px; border-radius: 8px; background: #FDECEC; color: var(--expense-red); height: 38px;" onclick="hapusTitipan(${t.id})">Hapus Sesi Ini</button>
             </div>
         </div>`;
     });
@@ -953,7 +953,7 @@ function resetFormButtons() {
     document.getElementById('btn-submit-expense').innerText = "Simpan Pengeluaran";
     document.getElementById('btn-submit-expense').style.backgroundColor = "var(--expense-red)";
     document.getElementById('btn-submit-transfer').innerText = "Mutasi Saldo";
-    document.getElementById('btn-submit-transfer').style.backgroundColor = "#8492A6";
+    document.getElementById('btn-submit-transfer').style.backgroundColor = "var(--suit-slate)";
     document.getElementById('tf-admin').disabled = false;
     editingTxId = null;
 }
@@ -1024,7 +1024,7 @@ function hapusTransaksi(id) {
     }
 }
 
-// ==================== GRAFIK & ANALISIS ====================
+// ==================== GRAFIK & ANALISIS (CHAINSAW MAN PALETTE) ====================
 function renderCharts() {
     const activeMonth = getSelectedMonth();
     const monthlyTx = transactions.filter(tx => tx.date.startsWith(activeMonth) && tx.type !== 'transfer');
@@ -1055,7 +1055,7 @@ function renderCharts() {
         const ctxTarget = document.getElementById('chartTarget').getContext('2d');
         chartTargetObj = new Chart(ctxTarget, {
             type: 'pie',
-            data: { labels: ['Kebutuhan Ideal', 'Keinginan Ideal', 'Tabungan Ideal'], datasets: [{ data: [targetIdeal.kebutuhan, targetIdeal.keinginan, targetIdeal.tabungan], backgroundColor: ['#3498DB', '#F39C12', '#2ECC71'], borderWidth: 2, borderColor: '#FFFFFF' }] },
+            data: { labels: ['Kebutuhan Ideal', 'Keinginan Ideal', 'Tabungan Ideal'], datasets: [{ data: [targetIdeal.kebutuhan, targetIdeal.keinginan, targetIdeal.tabungan], backgroundColor: ['#255C99', '#D4820A', '#1B9A59'], borderWidth: 2, borderColor: '#FFFFFF' }] },
             options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
     }
@@ -1072,7 +1072,7 @@ function renderCharts() {
         
         let labelChart2 = ['Kebutuhan', 'Keinginan', 'Tabungan'];
         let dataChart2 = [pengeluaranAktual.kebutuhan + pengeluaranAktual.biayaadmin, pengeluaranAktual.keinginan, pengeluaranAktual.tabungan];
-        let colorChart2 = ['#3498DB', '#F39C12', '#2ECC71'];
+        let colorChart2 = ['#255C99', '#D4820A', '#1B9A59'];
 
         if (sisaPemasukan > 0) {
             labelChart2.push('Sisa Pemasukan');
@@ -1117,7 +1117,7 @@ function renderMoodInsights(monthlyTx) {
     tags.forEach(tag => {
         const sum = expenses.filter(tx => tx.moodTag === tag).reduce((s, tx) => s + tx.amount, 0);
         const pct = Math.round((sum / totalOut) * 100);
-        const color = tag === '#BosanStres' ? '#E74C3C' : (tag === '#SosialTraktir' ? '#F39C12' : '#2ECC71');
+        const color = tag === '#BosanStres' ? '#D62828' : (tag === '#SosialTraktir' ? '#D4820A' : (tag === '#Darurat' ? '#7B3FA0' : '#1B9A59'));
         html += `
         <div class="mood-row">
             <div class="mood-row-header">
@@ -1138,9 +1138,9 @@ function updateStatusBadge(catName, aktual, target) {
     maxNominalEl.innerText = formatK(target);
 
     let defaultColor = "var(--primary-orange)";
-    if (catName === 'kebutuhan') defaultColor = "#2ECC71";
-    if (catName === 'keinginan') defaultColor = "#F39C12";
-    if (catName === 'tabungan') defaultColor = "#E74C3C";
+    if (catName === 'kebutuhan') defaultColor = "#1B9A59";
+    if (catName === 'keinginan') defaultColor = "#D4820A";
+    if (catName === 'tabungan') defaultColor = "#D62828";
     frontBg.style.backgroundColor = defaultColor;
 
     imgEl.style.display = "block";
@@ -1173,9 +1173,9 @@ function renderBarChartKomparasi() {
     chartKomparasiObj = new Chart(ctxBar, {
         type: 'bar',
         data: { labels: monthsLabel, datasets: [
-            { label: 'Pemasukan', data: incomesData, backgroundColor: '#2ECC71', borderRadius: 6 },
-            { label: 'Pengeluaran', data: expensesData, backgroundColor: '#E74C3C', borderRadius: 6 },
-            { label: 'Sisa Saldo Net', data: sisaData, backgroundColor: '#F39C12', borderRadius: 6 }
+            { label: 'Pemasukan', data: incomesData, backgroundColor: '#1B9A59', borderRadius: 6 },
+            { label: 'Pengeluaran', data: expensesData, backgroundColor: '#D62828', borderRadius: 6 },
+            { label: 'Sisa Saldo Net', data: sisaData, backgroundColor: '#D4820A', borderRadius: 6 }
         ]},
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }
     });
