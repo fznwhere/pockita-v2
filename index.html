@@ -49,7 +49,7 @@
             <!-- WIDGET COOLDOWN ANTI-IMPULSIF (MUNCUL JIKA ADA YANG DITAHAN) -->
             <div id="home-cooldown-container"></div>
 
-            <!-- GRID 8 MENU FITUR (WARNA KARAKTER CHAINSAW MAN) -->
+            <!-- GRID 8 MENU FITUR -->
             <div class="glass-card">
                 <div class="section-mini-header">
                     <h3>Menu Fitur</h3>
@@ -96,7 +96,7 @@
                         <span>Rutin Bulanan</span>
                     </button>
 
-                    <!-- Makima -->
+                    <!-- Makima (Hitam Arang) -->
                     <button class="grid-item" onclick="openSubpage('simulator', 'Simulator Anggaran')">
                         <div class="grid-icon-box icon-makima">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
@@ -251,7 +251,7 @@
             </div>
         </div>
 
-        <!-- ==================== HALAMAN SUB-FITUR (ALA BIBIT) ==================== -->
+        <!-- ==================== HALAMAN SUB-FITUR ==================== -->
         <div id="subpage-container" style="display: none;">
             <div class="subpage-header">
                 <button class="btn-back" onclick="closeSubpage()">← Kembali</button>
@@ -463,7 +463,7 @@
                 </div>
             </div>
 
-            <!-- SUB-6: SIMULATOR ANGGARAN (WHAT-IF SLIDERS) -->
+            <!-- SUB-6: SIMULATOR ANGGARAN (CUSTOM POS PENGELUARAN) -->
             <div id="sub-simulator" class="subpage-content" style="display: none;">
                 <div class="sim-hero-card">
                     <span class="balance-title">SISA DANA CADANGAN</span>
@@ -481,34 +481,22 @@
                         <input type="text" inputmode="numeric" id="sim-income" class="format-uang" value="300.000" oninput="updateSimulator()">
                     </div>
 
-                    <div class="slider-item">
-                        <div class="slider-label"><span>Kuota Internet (28–30 Hari)</span><strong id="val-sim-kuota">Rp 25.000</strong></div>
-                        <input type="range" id="sim-kuota" min="0" max="150000" step="5000" value="25000" oninput="updateSimulator()">
+                    <div class="section-mini-header" style="margin-top: 6px; margin-bottom: 12px;">
+                        <span style="font-size: 0.78rem; color: var(--text-main);">Pos Penggunaan Uang</span>
+                        <button type="button" class="btn-link" onclick="resetSimulatorItems()">Reset Default</button>
                     </div>
 
-                    <div class="slider-item">
-                        <div class="slider-label"><span>Bensin (Full Tank)</span><strong id="val-sim-bensin">Rp 30.000</strong></div>
-                        <input type="range" id="sim-bensin" min="0" max="200000" step="5000" value="30000" oninput="updateSimulator()">
-                    </div>
+                    <!-- DAFTAR SLIDER DINAMIS -->
+                    <div id="sim-sliders-container"></div>
 
-                    <div class="slider-item">
-                        <div class="slider-label"><span>Makan Wajib di Luar</span><strong id="val-sim-makan">Rp 0</strong></div>
-                        <input type="range" id="sim-makan" min="0" max="500000" step="5000" value="0" oninput="updateSimulator()">
-                    </div>
-
-                    <div class="slider-item">
-                        <div class="slider-label"><span>Makan / Jajan Bosan & Stres</span><strong id="val-sim-bosan">Rp 45.000</strong></div>
-                        <input type="range" id="sim-bosan" min="0" max="300000" step="5000" value="45000" oninput="updateSimulator()">
-                    </div>
-
-                    <div class="slider-item">
-                        <div class="slider-label"><span>Belajar di Luar & Traktir</span><strong id="val-sim-nongkrong">Rp 45.000</strong></div>
-                        <input type="range" id="sim-nongkrong" min="0" max="300000" step="5000" value="45000" oninput="updateSimulator()">
-                    </div>
-
-                    <div class="slider-item">
-                        <div class="slider-label"><span>Print, Belajar & Keperluan Lain</span><strong id="val-sim-lain">Rp 0</strong></div>
-                        <input type="range" id="sim-lain" min="0" max="300000" step="5000" value="0" oninput="updateSimulator()">
+                    <!-- FORM TAMBAH POS CUSTOM -->
+                    <div class="sim-add-box">
+                        <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px;">+ Tambah Pos Pengeluaran Custom</label>
+                        <div class="sim-add-row">
+                            <input type="text" id="new-sim-label" placeholder="Nama pos (cth: Skincare, Ongkir...)">
+                            <input type="text" inputmode="numeric" id="new-sim-max" class="format-uang" placeholder="Maks (300.000)">
+                            <button type="button" onclick="addSimulatorItem()">Tambah</button>
+                        </div>
                     </div>
                 </div>
             </div>

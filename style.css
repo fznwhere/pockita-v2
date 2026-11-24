@@ -3,17 +3,18 @@
 :root {
     --primary-orange: #E85D04;     /* Pochita Orange */
     --denji-blonde: #CA8A04;       /* Denji's Blonde Hair */
-    --secondary-orange: #D4820A;   /* Makima's Control Gold */
+    --secondary-orange: #D4820A;   /* Amber Warning */
+    --makima-black: #1A1A24;       /* Simulator Hero Charcoal Black */
     --bg-app: #F8F9FA;             
     --white: #FFFFFF;              
     --text-main: #1A1A24;          
     --text-muted: #8492A6;         
-    --income-green: #1B9A59;       /* Public Safety Emerald */
+    --income-green: #1B9A59;       
     --expense-red: #D62828;        /* Power's Blood Crimson */
     --aki-navy: #255C99;           /* Aki's Katana Navy */
     --reze-violet: #7B3FA0;        /* Reze's Bomb Violet */
-    --kobeni-burgundy: #B83358;    /* Kobeni's Anxious Burgundy */
-    --steel-teal: #167D7F;         /* Chainsaw Steel Teal */
+    --kobeni-burgundy: #B83358;    /* Kobeni's Burgundy */
+    --steel-teal: #167D7F;         
     --suit-slate: #3D5265;         /* Kishibe's Suit Slate */
     --border-color: #EAECEF;       
     --card-shadow: 0 10px 30px rgba(232, 93, 4, 0.07); 
@@ -23,7 +24,7 @@
 body { background-color: var(--bg-app); color: var(--text-main); display: flex; justify-content: center; padding: 16px 12px 72px 12px; }
 .app-container { width: 100%; max-width: 500px; } 
 
-/* HEADER & MONTH PILL */
+/* HEADER & MONTH PICKER (TANPA KOTAK) */
 .app-header { margin-bottom: 18px; }
 .header-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .header-brand { display: flex; align-items: center; gap: 10px; }
@@ -31,8 +32,8 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .brand-text h1 { color: var(--primary-orange); font-size: 1.7rem; font-weight: 800; line-height: 1.1; }
 .brand-text .tagline { color: var(--text-muted); font-size: 0.7rem; font-weight: 600; }
 
-.month-pill-box { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); flex-shrink: 0; }
-.borderless-picker { border: none; font-size: 0.82rem; font-weight: 700; color: var(--primary-orange); outline: none; background: transparent; cursor: pointer; width: auto; max-width: 145px; }
+.month-pill-box { background: transparent; border: none; padding: 0; box-shadow: none; flex-shrink: 0; }
+.borderless-picker { border: none; font-size: 0.85rem; font-weight: 700; color: var(--primary-orange); outline: none; background: transparent; cursor: pointer; width: auto; max-width: 150px; padding: 2px 0; }
 
 .view-top-title { margin-bottom: 18px; padding: 0 4px; }
 .view-top-title h2 { font-size: 1.45rem; font-weight: 800; color: var(--text-main); }
@@ -83,7 +84,7 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .btn-cd-cancel { flex: 1; background: #E6F6EE; color: var(--income-green); border: none; padding: 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 .btn-cd-proceed { flex: 1; background: var(--white); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 
-/* 8-ICON FEATURE GRID (CHAINSAW MAN CHARACTER PALETTE) */
+/* 8-ICON FEATURE GRID */
 .bibit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 8px; }
 .grid-item { background: transparent; border: none; display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; padding: 4px 2px; transition: 0.2s; }
 .grid-item:active { transform: scale(0.93); }
@@ -95,13 +96,14 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .icon-aki     { background: #EBF3FA; color: var(--aki-navy); }
 .icon-reze    { background: #F4ECF8; color: var(--reze-violet); }
 .icon-kobeni  { background: #FCEEF2; color: var(--kobeni-burgundy); }
-.icon-makima  { background: #FEF6E6; color: var(--secondary-orange); }
+.icon-makima  { background: #E8E8EE; color: var(--makima-black); }
 .icon-kishibe { background: #EDF1F5; color: var(--suit-slate); }
 .icon-power   { background: #FDECEC; color: var(--expense-red); }
 
-/* SUBPAGE VIEW HEADER */
+/* SUBPAGE VIEW HEADER & TOMBOL KEMBALI (TANPA KOTAK) */
 .subpage-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; position: sticky; top: 0; background: rgba(248, 249, 250, 0.92); backdrop-filter: blur(10px); padding: 10px 4px; z-index: 50; }
-.btn-back { background: var(--white); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.btn-back { background: transparent; border: none; color: var(--text-main); padding: 4px 2px; font-size: 0.9rem; font-weight: 700; cursor: pointer; box-shadow: none; transition: opacity 0.15s; }
+.btn-back:active { opacity: 0.6; }
 .subpage-header h2 { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
 
 /* BOTTOM NAVIGATION BAR + CENTER FAB */
@@ -208,14 +210,28 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .mood-bar-bg { background: #F1F3F5; height: 9px; border-radius: 10px; overflow: hidden; }
 .mood-bar-fill { height: 100%; border-radius: 10px; background: var(--primary-orange); transition: width 0.3s; }
 
-/* SIMULATOR HERO & SLIDERS */
+/* SIMULATOR HERO & CUSTOM SLIDERS */
 .sim-hero-card { background: linear-gradient(135deg, #1A1A24, #2E2E3E); color: white; padding: 22px 18px; border-radius: 22px; text-align: center; margin-bottom: 18px; box-shadow: 0 12px 28px rgba(26,26,36,0.18); }
 .sim-metrics-row { display: flex; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.72rem; color: #CBD5E1; }
 .sim-metrics-row strong { display: block; color: #F5B041; font-size: 0.88rem; margin-top: 3px; }
 .slider-item { margin-bottom: 16px; }
-.slider-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; }
-.slider-label strong { color: var(--primary-orange); }
+.slider-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; }
+.slider-label-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.slider-label-text { word-break: break-word; line-height: 1.3; }
+.slider-label strong { color: var(--primary-orange); flex-shrink: 0; }
 .slider-item input[type="range"] { width: 100%; accent-color: var(--primary-orange); cursor: pointer; }
+
+.sim-item-actions { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.btn-sim-mini { background: #F1F3F5; border: none; color: var(--text-muted); width: 20px; height: 20px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.btn-sim-mini.del { background: #FDECEC; color: var(--expense-red); }
+
+.sim-add-box { margin-top: 18px; padding-top: 14px; border-top: 1.5px dashed var(--border-color); }
+.sim-add-row { display: flex; gap: 6px; }
+.sim-add-row input[type="text"] { flex: 1; min-width: 0; padding: 9px 10px; border: 1.5px solid var(--border-color); border-radius: 10px; font-size: 0.8rem; outline: none; background: #FCFCFD; }
+.sim-add-row input#new-sim-max { max-width: 112px; }
+.sim-add-row input:focus { border-color: var(--primary-orange); background: var(--white); }
+.sim-add-row button { background: var(--makima-black); color: var(--white); border: none; border-radius: 10px; padding: 0 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+.sim-add-row button:active { transform: scale(0.96); }
 
 /* HISTORY, SEARCH & FILTERS */
 .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1.5px solid var(--bg-app); padding-bottom: 10px; }
@@ -360,6 +376,6 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .modal-header { display: flex; justify-content: space-between; align-items: center; }
 .close-modal { color: var(--text-muted); font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; }
 
-/* FOOTER (FLUSH WITH BOTTOM NAV) */
+/* FOOTER */
 .app-footer { position: relative; margin-top: 8px; margin-bottom: 0; margin-left: -12px; margin-right: -12px; overflow: hidden; display: flex; -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 40%); mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 40%); }
 .footer-bg { width: 100%; height: auto; display: block; }

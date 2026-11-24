@@ -338,33 +338,147 @@ function renderDailyCyclePage() {
         </div>`;
 }
 
-// ==================== SIMULATOR ANGGARAN (WHAT-IF) ====================
-function updateSimulator() {
-    const income = parseUang(document.getElementById('sim-income').value);
-    const kuota = parseInt(document.getElementById('sim-kuota').value) || 0;
-    const bensin = parseInt(document.getElementById('sim-bensin').value) || 0;
-    const makan = parseInt(document.getElementById('sim-makan').value) || 0;
-    const bosan = parseInt(document.getElementById('sim-bosan').value) || 0;
-    const nongkrong = parseInt(document.getElementById('sim-nongkrong').value) || 0;
-    const lain = parseInt(document.getElementById('sim-lain').value) || 0;
+/* ==================== SIMULATOR ANGGARAN CUSTOM ==================== */
+const DEFAULT_SIM_ITEMS = [
+    { id: 'sim_1', label: 'Kuota Internet (28–30 Hari)', value: 25000, max: 150000 },
+    { id: 'sim_2', label: 'Bensin (Full Tank)', value: 30000, max: 200000 },
+    { id: 'sim_3', label: 'Makan Wajib di Luar', value: 0, max: 500000 },
+    { id: 'sim_4', label: 'Makan / Jajan Bosan & Stres', value: 45000, max: 300000 },
+    { id: 'sim_5', label: 'Belajar di Luar & Traktir', value: 45000, max: 300000 },
+    { id: 'sim_6', label: 'Print, Belajar & Keperluan Lain', value: 0, max: 300000 }
+];
 
-    document.getElementById('val-sim-kuota').innerText = `Rp ${formatRupiah(kuota)}`;
-    document.getElementById('val-sim-bensin').innerText = `Rp ${formatRupiah(bensin)}`;
-    document.getElementById('val-sim-makan').innerText = `Rp ${formatRupiah(makan)}`;
-    document.getElementById('val-sim-bosan').innerText = `Rp ${formatRupiah(bosan)}`;
-    document.getElementById('val-sim-nongkrong').innerText = `Rp ${formatRupiah(nongkrong)}`;
-    document.getElementById('val-sim-lain').innerText = `Rp ${formatRupiah(lain)}`;
+let simItems = JSON.parse(localStorage.getItem('pockita_sim_items')) || JSON.parse(JSON.stringify(DEFAULT_SIM_ITEMS));
 
-    const totalOut = kuota + bensin + makan + bosan + nongkrong + lain;
-    const sisa = income - totalOut;
-    const sisaEl = document.getElementById('sim-sisa');
-    sisaEl.innerText = `Rp ${formatRupiah(sisa)}`;
-    sisaEl.style.color = sisa < 0 ? '#FF6B6B' : '#4ADE80';
-
-    document.getElementById('sim-total-out').innerText = `Rp ${formatRupiah(totalOut)}`;
-    document.getElementById('sim-daily-14').innerText = `Rp ${formatRupiah(Math.max(0, Math.floor(sisa / 14)))}`;
-    document.getElementById('sim-daily-30').innerText = `Rp ${formatRupiah(Math.max(0, Math.floor(sisa / 30)))}`;
+function saveSimState() {
+    localStorage.setItem('pockita_sim_items', JSON.stringify(simItems));
+    const incomeEl = document.getElementById('sim-income');
+    if (incomeEl) localStorage.setItem('pockita_sim_income', incomeEl.value);
 }
+
+function formatRpSim(num) {
+    const abs = Math.abs(Math.round(num)).toLocaleString('id-ID');
+    return (num < 0 ? '-Rp ' : 'Rp ') + abs;
+}
+
+function renderSimulatorItems() {
+    const container = document.getElementById('sim-sliders-container');
+    if (!container) return;
+
+    if (simItems.length === 0) {
+        container.innerHTML = `<p class="sub-info" style="text-align:center; padding: 12px 0;">Belum ada pos pengeluaran. Tambahkan di bawah.</p>`;
+        updateSimulator();
+        return;
+    }
+
+    container.innerHTML = simItems.map(item => `
+        <div class="slider-item">
+            <div class="slider-label">
+                <div class="slider-label-left">
+                    <span class="slider-label-text">${item.label}</span>
+                    <span class="sim-item-actions">
+                        <button type="button" class="btn-sim-mini" onclick="editSimulatorItem('${item.id}')" title="Ubah nama">✏️</button>
+                        <button type="button" class="btn-sim-mini del" onclick="deleteSimulatorItem('${item.id}')" title="Hapus pos">×</button>
+                    </span>
+                </div>
+                <strong id="val-${item.id}">${formatRpSim(item.value)}</strong>
+            </div>
+            <input type="range" min="0" max="${item.max}" step="5000" value="${item.value}" oninput="onSimSliderInput('${item.id}', this.value)">
+        </div>
+    `).join('');
+
+    updateSimulator();
+}
+
+function onSimSliderInput(id, val) {
+    const item = simItems.find(i => i.id === id);
+    if (!item) return;
+    item.value = Number(val) || 0;
+    const labelEl = document.getElementById(`val-${id}`);
+    if (labelEl) labelEl.textContent = formatRpSim(item.value);
+    saveSimState();
+    updateSimulator();
+}
+
+function updateSimulator() {
+    const incomeInput = document.getElementById('sim-income');
+    if (!incomeInput) return;
+
+    const income = parseInt(incomeInput.value.replace(/\D/g, ''), 10) || 0;
+    const totalOut = simItems.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+    const sisa = income - totalOut;
+
+    const sisaEl = document.getElementById('sim-sisa');
+    const outEl = document.getElementById('sim-total-out');
+    const d14El = document.getElementById('sim-daily-14');
+    const d30El = document.getElementById('sim-daily-30');
+
+    if (sisaEl) {
+        sisaEl.textContent = formatRpSim(sisa);
+        sisaEl.style.color = sisa < 0 ? '#FF6B6B' : '#4ADE80';
+    }
+    if (outEl) outEl.textContent = formatRpSim(totalOut);
+    if (d14El) d14El.textContent = formatRpSim(Math.max(0, Math.floor(sisa / 14)));
+    if (d30El) d30El.textContent = formatRpSim(Math.max(0, Math.floor(sisa / 30)));
+
+    saveSimState();
+}
+
+function addSimulatorItem() {
+    const labelInput = document.getElementById('new-sim-label');
+    const maxInput = document.getElementById('new-sim-max');
+    if (!labelInput) return;
+
+    const label = labelInput.value.trim();
+    if (!label) {
+        labelInput.focus();
+        return;
+    }
+
+    const customMax = maxInput ? (parseInt(maxInput.value.replace(/\D/g, ''), 10) || 300000) : 300000;
+    simItems.push({
+        id: 'sim_' + Date.now(),
+        label: label,
+        value: 0,
+        max: Math.max(10000, customMax)
+    });
+
+    labelInput.value = '';
+    if (maxInput) maxInput.value = '';
+    saveSimState();
+    renderSimulatorItems();
+}
+
+function editSimulatorItem(id) {
+    const item = simItems.find(i => i.id === id);
+    if (!item) return;
+    const newName = prompt('Ubah nama pos pengeluaran:', item.label);
+    if (newName && newName.trim()) {
+        item.label = newName.trim();
+        saveSimState();
+        renderSimulatorItems();
+    }
+}
+
+function deleteSimulatorItem(id) {
+    simItems = simItems.filter(i => i.id !== id);
+    saveSimState();
+    renderSimulatorItems();
+}
+
+function resetSimulatorItems() {
+    if (!confirm('Kembalikan daftar pos pengeluaran simulator ke bawaan awal?')) return;
+    simItems = JSON.parse(JSON.stringify(DEFAULT_SIM_ITEMS));
+    saveSimState();
+    renderSimulatorItems();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedIncome = localStorage.getItem('pockita_sim_income');
+    const incomeEl = document.getElementById('sim-income');
+    if (savedIncome && incomeEl) incomeEl.value = savedIncome;
+    renderSimulatorItems();
+});
 
 // ==================== CORE UTILITIES & FORMATTING ====================
 function toggleBalance(e) {
