@@ -12,213 +12,130 @@
 <body>
 
     <div class="app-container">
-        <!-- HEADER -->
-        <header class="app-header">
-            <div class="header-top">
-                <div class="header-brand">
-                    <img src="assets/img/pochita.png" alt="Pockita Mascot" class="app-logo">
-                    <div class="brand-text">
-                        <h1>Pockita</h1>
-                        <p class="tagline">Cutting Through Your Daily Expenses</p>
+
+        <!-- ==================== VIEW 1: BERANDA ==================== -->
+        <div id="view-home" class="main-view">
+            <header class="app-header">
+                <div class="header-top">
+                    <div class="header-brand">
+                        <img src="assets/img/pochita.png" alt="Pockita Mascot" class="app-logo">
+                        <div class="brand-text">
+                            <h1>Pockita</h1>
+                            <p class="tagline">Cutting Through Your Daily Expenses</p>
+                        </div>
+                    </div>
+                    <div class="month-pill-box">
+                        <input type="month" id="global-month-picker" class="borderless-picker" onchange="changeGlobalMonth()">
                     </div>
                 </div>
-                <button onclick="openMemberModal()" class="btn-member" title="Kartu Member">
-                    <img src="assets/img/member.png" alt="Ikon Member" style="width:100%; height:100%; object-fit:contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <span style="display:none; font-size:1.8rem;">💳</span>
-                </button>
-            </div>
-            
-            <div class="month-picker-container">
-                <input type="month" id="global-month-picker" class="borderless-picker" onchange="changeGlobalMonth()">
-            </div>
-        </header>
+            </header>
 
-        <!-- KARTU SALDO UTAMA -->
-        <div class="balance-card" onclick="toggleBreakdown(event)">
-            <div class="balance-header-row">
-                <span class="balance-title">TOTAL SALDO</span>
-                <button onclick="toggleBalance(event)" class="btn-eye" id="btn-toggle-eye">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                </button>
+            <!-- KARTU SALDO UTAMA -->
+            <div class="balance-card" onclick="toggleBreakdown(event)">
+                <div class="balance-header-row">
+                    <span class="balance-title">TOTAL SALDO</span>
+                    <button onclick="toggleBalance(event)" class="btn-eye" id="btn-toggle-eye" title="Sembunyikan/Tampilkan Saldo">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+                <h2 class="balance-amount">Rp <span id="total-saldo">0</span></h2>
+                <p class="balance-hint">Ketuk kartu untuk rincian per dompet</p>
+                <div id="balance-breakdown" class="balance-breakdown" style="display: none;"></div>
             </div>
-            <h2 class="balance-amount">Rp <span id="total-saldo">0</span></h2>
-            <div id="balance-breakdown" class="balance-breakdown" style="display: none;"></div>
+
+            <!-- WIDGET RINGKAS BATAS AMAN HARIAN (MODE UANG SAKU MINIM) -->
+            <div id="home-daily-widget" class="glass-card daily-mini-card" onclick="openSubpage('daily', 'Batas Harian')"></div>
+
+            <!-- WIDGET COOLDOWN ANTI-IMPULSIF (MUNCUL JIKA ADA YANG DITAHAN) -->
+            <div id="home-cooldown-container"></div>
+
+            <!-- GRID 8 MENU FITUR ALA BIBIT -->
+            <div class="glass-card">
+                <div class="section-mini-header">
+                    <h3>Menu Fitur</h3>
+                    <span>Ketuk untuk buka</span>
+                </div>
+                <div class="bibit-grid">
+                    <button class="grid-item" onclick="openSubpage('daily', 'Batas Harian')">
+                        <div class="grid-icon-box icon-orange">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                        <span>Batas Harian</span>
+                    </button>
+
+                    <button class="grid-item" onclick="openSubpage('goals', 'Celengan Impian')">
+                        <div class="grid-icon-box icon-green">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                        </div>
+                        <span>Celengan</span>
+                    </button>
+
+                    <button class="grid-item" onclick="openSubpage('debt', 'Hutang & Piutang')">
+                        <div class="grid-icon-box icon-blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <span>Hutang Piutang</span>
+                    </button>
+
+                    <button class="grid-item" onclick="openSubpage('titipan', 'Uang Titipan')">
+                        <div class="grid-icon-box icon-purple">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        </div>
+                        <span>Uang Titipan</span>
+                    </button>
+
+                    <button class="grid-item" onclick="openSubpage('recur', 'Transaksi Rutin')">
+                        <div class="grid-icon-box icon-pink">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </div>
+                        <span>Rutin Bulanan</span>
+                    </button>
+
+                    <button class="grid-item" onclick="openSubpage('simulator', 'Simulator Anggaran')">
+                        <div class="grid-icon-box icon-amber">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </div>
+                        <span>Simulator</span>
+                    </button>
+
+                    <button class="grid-item" onclick="openSubpage('member', 'Kartu Member')">
+                        <div class="grid-icon-box icon-cyan">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        </div>
+                        <span>Kartu Member</span>
+                    </button>
+
+                    <button class="grid-item" onclick="openSubpage('wallet', 'Atur Dompet')">
+                        <div class="grid-icon-box icon-teal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+                        </div>
+                        <span>Atur Dompet</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TRANSAKSI TERAKHIR DI BERANDA -->
+            <div class="glass-card">
+                <div class="section-mini-header">
+                    <h3>Transaksi Terakhir</h3>
+                    <button class="btn-link" onclick="switchMainView('history')">Lihat Semua →</button>
+                </div>
+                <div id="home-recent-tx"></div>
+            </div>
+
+            <p class="slogan-footer">Guarding your savings, one coin at a time</p>
+            <footer class="app-footer">
+                <img src="assets/img/footer.png" alt="Footer Background" class="footer-bg">
+            </footer>
         </div>
 
-        <!-- NAVIGASI UTAMA -->
-        <nav class="main-nav">
-            <button class="nav-btn active" id="nav-tx" onclick="switchPage('tx')">Transaksi</button>
-            <button class="nav-btn" id="nav-analysis" onclick="switchPage('analysis')">Analisis</button>
-            <button class="nav-btn" id="nav-plan" onclick="switchPage('plan')">Rencana</button>
-        </nav>
-
-        <!-- ==================== HALAMAN 1: TRANSAKSI ==================== -->
-        <section id="page-tx" class="page-section">
-            <div class="tab-container">
-                <button class="tab-btn active" id="tab-pemasukan" onclick="switchForm('income')">+ Pemasukan</button>
-                <button class="tab-btn" id="tab-pengeluaran" onclick="switchForm('expense')">- Pengeluaran</button>
-                <button class="tab-btn" id="tab-transfer" onclick="switchForm('transfer')">⇄ Mutasi</button>
+        <!-- ==================== VIEW 2: ANALISIS ==================== -->
+        <div id="view-analysis" class="main-view" style="display: none;">
+            <div class="view-top-title">
+                <h2>Analisis Keuangan</h2>
+                <p class="sub-info">Pantau rasio 50/30/20, pola pemicu jajan, dan tren bulanan.</p>
             </div>
 
-            <!-- FORM PEMASUKAN -->
-            <div class="form-card" id="card-pemasukan">
-                <form id="form-pemasukan">
-                    <div class="input-group">
-                        <label>Jumlah</label>
-                        <input type="text" inputmode="numeric" id="in-jumlah" class="format-uang" placeholder="Contoh: 2.000.000" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Sumber</label>
-                        <input type="text" id="in-sumber" list="sumber-list" placeholder="Gaji, Ortu, Jualan..." required>
-                        <datalist id="sumber-list"></datalist>
-                    </div>
-                    <div class="input-group">
-                        <label>Catatan</label>
-                        <input type="text" id="in-catatan" placeholder="Cth: Dikasih untuk ultah...">
-                    </div>
-                    <div class="input-group-row">
-                        <div class="input-group">
-                            <label>Tanggal</label>
-                            <input type="date" id="in-tanggal" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Jam</label>
-                            <input type="time" id="in-waktu" required>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>
-                            Simpan Ke
-                            <a href="#" onclick="openMethodModal(event)" class="btn-manage-method">⚙️ Kelola</a>
-                        </label>
-                        <select id="in-metode" required></select>
-                    </div>
-                    <button type="submit" id="btn-submit-income" class="btn btn-income">Simpan Pemasukan</button>
-                </form>
-            </div>
-
-            <!-- FORM PENGELUARAN -->
-            <div class="form-card" id="card-pengeluaran" style="display: none;">
-                <form id="form-pengeluaran">
-                    <div class="input-group">
-                        <label>Jumlah</label>
-                        <input type="text" inputmode="numeric" id="out-jumlah" class="format-uang" placeholder="Contoh: 15.000" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Kategori</label>
-                        <select id="out-kategori" required>
-                            <option value="kebutuhan">Kebutuhan</option>
-                            <option value="keinginan">Keinginan</option>
-                            <option value="tabungan">Tabungan</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Keterangan</label>
-                        <input type="text" id="out-detail" list="detail-list" placeholder="Beli akun game, Beras..." required>
-                        <datalist id="detail-list"></datalist>
-                    </div>
-                    <div class="input-group">
-                        <label>Catatan</label>
-                        <input type="text" id="out-catatan" placeholder="Cth: Titipan teman / Varian cokelat...">
-                    </div>
-                    <div class="input-group-row">
-                        <div class="input-group">
-                            <label>Tanggal</label>
-                            <input type="date" id="out-tanggal" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Jam</label>
-                            <input type="time" id="out-waktu" required>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>
-                            Ambil Dari
-                            <a href="#" onclick="openMethodModal(event)" class="btn-manage-method">⚙️ Kelola</a>
-                        </label>
-                        <select id="out-metode" required></select>
-                    </div>
-                    <button type="submit" id="btn-submit-expense" class="btn btn-expense">Simpan Pengeluaran</button>
-                </form>
-            </div>
-
-            <!-- FORM MUTASI -->
-            <div class="form-card" id="card-transfer" style="display: none;">
-                <form id="form-transfer">
-                    <p class="sub-info" style="margin-bottom: 15px;">Mutasi saldo tidak akan memengaruhi grafik analisis maupun total saldo utamamu.</p>
-                    <div class="input-group-row">
-                        <div class="input-group">
-                            <label>Jumlah</label>
-                            <input type="text" inputmode="numeric" id="tf-jumlah" class="format-uang" placeholder="Cth: 50.000" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Biaya Admin</label>
-                            <input type="text" inputmode="numeric" id="tf-admin" class="format-uang" placeholder="Kosongkan jika gratis">
-                        </div>
-                    </div>
-                    <div class="input-group-row">
-                        <div class="input-group">
-                            <label>Dari</label>
-                            <select id="tf-metode-dari" required></select>
-                        </div>
-                        <div class="input-group" style="display: flex; align-items: center; justify-content: center; max-width: 30px; margin-top: 15px;">
-                            <span style="font-size: 1.5rem; color: var(--text-muted);">➡</span>
-                        </div>
-                        <div class="input-group">
-                            <label>Ke</label>
-                            <select id="tf-metode-ke" required></select>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Catatan</label>
-                        <input type="text" id="tf-catatan" placeholder="Cth: Pindah dana untuk COD...">
-                    </div>
-                    <div class="input-group-row">
-                        <div class="input-group">
-                            <label>Tanggal</label>
-                            <input type="date" id="tf-tanggal" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Jam</label>
-                            <input type="time" id="tf-waktu" required>
-                        </div>
-                    </div>
-                    <button type="submit" id="btn-submit-transfer" class="btn btn-transfer">Mutasi Saldo</button>
-                </form>
-            </div>
-
-            <!-- RIWAYAT -->
-            <div class="history-card">
-                <div class="history-header">
-                    <h3>Riwayat Transaksi</h3>
-                    <div class="history-actions" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
-                        <button class="btn-export" onclick="exportToExcel()">📥 Excel</button>
-                        <select id="filter-tipe" class="filter-dropdown" onchange="renderApp()">
-                            <option value="Utama">Utama</option>
-                            <option value="income">Pemasukan</option>
-                            <option value="expense">Pengeluaran</option>
-                            <option value="transfer">Mutasi</option>
-                        </select>
-                        <select id="filter-metode" class="filter-dropdown" onchange="renderApp()">
-                            <option value="Semua">Semua Dompet</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="history-time-toggle">
-                    <div class="time-switches">
-                        <button id="btn-mode-bulan" class="time-btn active" onclick="setHistoryMode('bulan')">Lihat Bulanan</button>
-                        <button id="btn-mode-hari" class="time-btn" onclick="setHistoryMode('hari')">Lihat Harian</button>
-                    </div>
-                    <input type="date" id="filter-hari" style="display: none;" class="filter-dropdown" onchange="renderApp()">
-                </div>
-
-                <div id="daftar-transaksi" class="transaction-container"></div>
-            </div>
-        </section>
-
-        <!-- ==================== HALAMAN 2: ANALISIS ==================== -->
-        <section id="page-analysis" class="page-section" style="display: none;">
             <div class="status-budget-card">
                 <h3>Status Keuangan Bulan Ini</h3>
                 <p class="sub-info" style="text-align: center; margin-top: -10px; margin-bottom: 15px;">Tap kartu untuk melihat nominal maksimal</p>
@@ -253,6 +170,13 @@
                 </div>
             </div>
 
+            <!-- ANALISIS PEMICU PENGELUARAN (MOOD TAGS) -->
+            <div class="glass-card">
+                <h3 style="margin-bottom: 4px;">Pemicu Pengeluaran Bulan Ini</h3>
+                <p class="sub-info" style="margin-bottom: 14px;">Deteksi kebocoran karena bosan, stres, atau traktir.</p>
+                <div id="mood-insight-list"></div>
+            </div>
+
             <div class="charts-card">
                 <div class="chart-wrapper">
                     <h4>Target Porsi Ideal 50/30/20</h4>
@@ -271,234 +195,545 @@
                 <h3>Perbandingan Arus Kas Antar Bulan</h3>
                 <div class="bar-chart-container" style="margin-top: 15px; height: 260px;"><canvas id="chartKomparasi"></canvas></div>
             </div>
-        </section>
+        </div>
 
-        <!-- ==================== HALAMAN 3: RENCANA ==================== -->
-        <section id="page-plan" class="page-section" style="display: none;">
-            
-            <div class="form-card">
-                <h3>Transaksi Bulanan</h3>
-                <p class="sub-info">Otomatis memotong saldo & tercatat setiap awal bulan.</p>
-                <form id="form-berulang" style="margin-top:15px;">
-                    <div class="input-group">
-                        <label>Nominal</label>
-                        <input type="text" inputmode="numeric" id="recur-jumlah" class="format-uang" placeholder="Contoh: 49.000" required>
+        <!-- ==================== VIEW 3: RIWAYAT LENGKAP ==================== -->
+        <div id="view-history" class="main-view" style="display: none;">
+            <div class="history-card">
+                <div class="history-header">
+                    <h3>Riwayat Transaksi</h3>
+                    <button class="btn-export" onclick="exportToExcel()">📥 Excel</button>
+                </div>
+
+                <div class="filter-bar-grid">
+                    <select id="filter-tipe" class="filter-dropdown" onchange="renderApp()">
+                        <option value="Utama">Utama</option>
+                        <option value="income">Pemasukan</option>
+                        <option value="expense">Pengeluaran</option>
+                        <option value="transfer">Mutasi</option>
+                    </select>
+                    <select id="filter-metode" class="filter-dropdown" onchange="renderApp()">
+                        <option value="Semua">Semua Dompet</option>
+                    </select>
+                    <select id="filter-mood" class="filter-dropdown" onchange="renderApp()">
+                        <option value="Semua">Semua Tag</option>
+                        <option value="#Wajib">#Wajib</option>
+                        <option value="#BosanStres">#BosanStres</option>
+                        <option value="#SosialTraktir">#SosialTraktir</option>
+                        <option value="#Darurat">#Darurat</option>
+                    </select>
+                </div>
+                
+                <div class="history-time-toggle">
+                    <div class="time-switches">
+                        <button id="btn-mode-bulan" class="time-btn active" onclick="setHistoryMode('bulan')">Lihat Bulanan</button>
+                        <button id="btn-mode-hari" class="time-btn" onclick="setHistoryMode('hari')">Lihat Harian</button>
                     </div>
-                    <div class="input-group">
-                        <label>Kategori</label>
-                        <select id="recur-kategori" required>
-                            <option value="kebutuhan">Kebutuhan</option>
-                            <option value="keinginan">Keinginan</option>
-                        </select>
-                    </div>
-                    <div class="input-group-row">
+                    <input type="date" id="filter-hari" style="display: none;" class="filter-dropdown" onchange="renderApp()">
+                </div>
+
+                <div id="daftar-transaksi" class="transaction-container"></div>
+            </div>
+        </div>
+
+        <!-- ==================== HALAMAN SUB-FITUR (ALA BIBIT) ==================== -->
+        <div id="subpage-container" style="display: none;">
+            <div class="subpage-header">
+                <button class="btn-back" onclick="closeSubpage()">← Kembali</button>
+                <h2 id="subpage-title">Detail Fitur</h2>
+            </div>
+
+            <!-- SUB-1: BATAS HARIAN (SIKLUS UANG SAKU MINIM) -->
+            <div id="sub-daily" class="subpage-content" style="display: none;">
+                <div id="daily-summary-box"></div>
+
+                <div class="form-card">
+                    <h3>Atur Siklus Uang Saku</h3>
+                    <p class="sub-info" style="margin-bottom: 14px;">Bagi pegangan uang saku saat ini ke target jumlah hari bertahan agar tidak habis di awal minggu.</p>
+                    <form id="form-cycle">
                         <div class="input-group">
-                            <label>Nama Layanan</label>
-                            <input type="text" id="recur-nama" placeholder="Spotify, Netflix..." required>
+                            <label>
+                                Uang Pegangan Siklus Ini (Rp)
+                                <a href="#" onclick="fillCycleFromBalance(event)" class="btn-manage-method">Pakai Total Saldo</a>
+                            </label>
+                            <input type="text" inputmode="numeric" id="cycle-budget" class="format-uang" placeholder="Contoh: 200.000" required>
+                        </div>
+                        <div class="input-group-row">
+                            <div class="input-group">
+                                <label>Target Bertahan (Hari)</label>
+                                <input type="number" id="cycle-days" min="1" max="60" value="7" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Saldo Mati / Cadangan (%)</label>
+                                <input type="number" id="cycle-dead-pct" min="0" max="50" value="15" required>
+                            </div>
                         </div>
                         <div class="input-group">
-                            <label>Ambil Dari</label>
-                            <select id="recur-metode" required></select>
+                            <label>Tanggal Mulai Siklus</label>
+                            <input type="date" id="cycle-start" required>
                         </div>
-                    </div>
-                    <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Aktifkan Langganan</button>
-                </form>
-                <div class="list-plan-container" style="margin-top:20px;">
-                    <h4>Daftar Rutinitas Aktif:</h4>
-                    <ul id="list-berulang" class="plan-list"></ul>
+                        <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange);">Simpan & Reset Siklus</button>
+                    </form>
                 </div>
             </div>
 
-            <div class="form-card">
-                <h3>Target & Tagihan</h3>
-                <p class="sub-info">Catat impian menabung atau cicilan tagihan belanjaanmu.</p>
-                <form id="form-goals" style="margin-top:15px;">
-                    <div class="input-group">
-                        <label>Nama Target</label>
-                        <input type="text" id="goal-nama" placeholder="Beli Laptop, COD Sepatu..." required>
-                    </div>
-                    <div class="input-group">
-                        <label>Kategori Dana</label>
-                        <select id="goal-kategori" required>
-                            <option value="kebutuhan">Kebutuhan</option>
-                            <option value="keinginan">Keinginan</option>
-                        </select>
-                    </div>
-                    <div class="input-group-row">
+            <!-- SUB-2: CELENGAN IMPIAN (TARGET & TAGIHAN) -->
+            <div id="sub-goals" class="subpage-content" style="display: none;">
+                <div class="form-card">
+                    <h3>Buat Target & Tagihan Baru</h3>
+                    <p class="sub-info">Catat impian menabung atau cicilan tagihan belanjaanmu.</p>
+                    <form id="form-goals" style="margin-top:15px;">
+                        <div class="input-group">
+                            <label>Nama Target</label>
+                            <input type="text" id="goal-nama" placeholder="Beli Laptop, COD Sepatu..." required>
+                        </div>
+                        <div class="input-group">
+                            <label>Kategori Dana</label>
+                            <select id="goal-kategori" required>
+                                <option value="tabungan">Tabungan</option>
+                                <option value="kebutuhan">Kebutuhan</option>
+                                <option value="keinginan">Keinginan</option>
+                            </select>
+                        </div>
                         <div class="input-group">
                             <label>Target Nominal</label>
-                            <input type="text" inputmode="numeric" id="goal-target" class="format-uang" placeholder="Contoh: 10.000.000" required>
+                            <input type="text" inputmode="numeric" id="goal-target" class="format-uang" placeholder="Contoh: 1.000.000" required>
                         </div>
-                    </div>
-                    <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Buat Daftar Baru</button>
-                </form>
-                <div class="list-plan-container" style="margin-top:20px;">
-                    <h4>Progress Target & Tagihan:</h4>
-                    <div id="list-goals"></div>
+                        <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Buat Target Baru</button>
+                    </form>
+                </div>
+                <div class="form-card">
+                    <h3>Progress Target & Tagihan</h3>
+                    <div id="list-goals" style="margin-top:15px;"></div>
                 </div>
             </div>
 
-            <div class="form-card">
-                <h3>Hutang & Piutang</h3>
-                <p class="sub-info">Catat arus uang pinjaman masuk atau keluar dari dompetmu.</p>
-                
-                <div class="tab-container" style="margin-top: 15px;">
-                    <button class="tab-btn active" id="tab-hutang-btn" onclick="switchDebtForm('hutang')">Hutang</button>
-                    <button class="tab-btn" id="tab-piutang-btn" onclick="switchDebtForm('piutang')">Piutang</button>
+            <!-- SUB-3: HUTANG & PIUTANG -->
+            <div id="sub-debt" class="subpage-content" style="display: none;">
+                <div class="form-card">
+                    <h3>Catat Hutang / Piutang</h3>
+                    <p class="sub-info">Catat arus uang pinjaman masuk atau keluar dari dompetmu.</p>
+                    <div class="tab-container" style="margin-top: 15px;">
+                        <button class="tab-btn active" id="tab-hutang-btn" onclick="switchDebtForm('hutang')">Hutang (Pinjam)</button>
+                        <button class="tab-btn" id="tab-piutang-btn" onclick="switchDebtForm('piutang')">Piutang (Meminjamkan)</button>
+                    </div>
+
+                    <div id="card-hutang">
+                        <form id="form-hutang">
+                            <div class="input-group">
+                                <label>Nama Pemberi Pinjaman</label>
+                                <input type="text" id="hutang-nama" placeholder="Pinjam uang dari B..." required>
+                            </div>
+                            <div class="input-group-row">
+                                <div class="input-group">
+                                    <label>Nominal</label>
+                                    <input type="text" inputmode="numeric" id="hutang-jumlah" class="format-uang" placeholder="Contoh: 50.000" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Simpan Ke</label>
+                                    <select id="hutang-metode" required></select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Catatan</label>
+                                <input type="text" id="hutang-catatan" placeholder="Cth: Janji ganti besok...">
+                            </div>
+                            <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Simpan Catatan Hutang</button>
+                        </form>
+                    </div>
+
+                    <div id="card-piutang" style="display: none;">
+                        <form id="form-piutang">
+                            <div class="input-group">
+                                <label>Nama Peminjam</label>
+                                <input type="text" id="piutang-nama" placeholder="Si A pinjam uang..." required>
+                            </div>
+                            <div class="input-group">
+                                <label>Kategori Dana</label>
+                                <select id="piutang-kategori" required>
+                                    <option value="kebutuhan">Kebutuhan</option>
+                                    <option value="keinginan">Keinginan</option>
+                                </select>
+                            </div>
+                            <div class="input-group-row">
+                                <div class="input-group">
+                                    <label>Nominal</label>
+                                    <input type="text" inputmode="numeric" id="piutang-jumlah" class="format-uang" placeholder="Contoh: 100.000" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Ambil Dari</label>
+                                    <select id="piutang-metode" required></select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Catatan</label>
+                                <input type="text" id="piutang-catatan" placeholder="Cth: Lunas akhir bulan...">
+                            </div>
+                            <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Simpan Catatan Piutang</button>
+                        </form>
+                    </div>
                 </div>
 
-                <div id="card-hutang">
-                    <form id="form-hutang">
+                <div class="form-card">
+                    <h4 style="color: var(--text-main); margin-bottom: 10px;">Daftar Hutang:</h4>
+                    <div id="list-hutang"></div>
+
+                    <h4 style="color: var(--text-main); margin-top: 25px; margin-bottom: 10px;">Daftar Piutang:</h4>
+                    <div id="list-piutang"></div>
+                </div>
+            </div>
+
+            <!-- SUB-4: UANG TITIPAN -->
+            <div id="sub-titipan" class="subpage-content" style="display: none;">
+                <div class="form-card">
+                    <h3>Buat Sesi Titipan</h3>
+                    <p class="sub-info">Catat rincian belanja & sisa kembalian dari uang titipan.</p>
+                    <form id="form-titipan" style="margin-top:15px;">
                         <div class="input-group">
-                            <label>Nama Pemberi Pinjaman</label>
-                            <input type="text" id="hutang-nama" placeholder="Pinjam uang dari B..." required>
+                            <label>Judul Titipan</label>
+                            <input type="text" id="titipan-judul" placeholder="Cth: Uang titipan dari Kakak..." required>
                         </div>
                         <div class="input-group-row">
                             <div class="input-group">
                                 <label>Nominal</label>
-                                <input type="text" inputmode="numeric" id="hutang-jumlah" class="format-uang" placeholder="Contoh: 50.000" required>
+                                <input type="text" inputmode="numeric" id="titipan-modal" class="format-uang" placeholder="Contoh: 150.000" required>
                             </div>
                             <div class="input-group">
-                                <label>Simpan Ke</label>
-                                <select id="hutang-metode" required></select>
+                                <label>Tanggal Diterima</label>
+                                <input type="date" id="titipan-tanggal" required>
                             </div>
                         </div>
-                        <div class="input-group">
-                            <label>Catatan</label>
-                            <input type="text" id="hutang-catatan" placeholder="Cth: Janji ganti besok...">
-                        </div>
-                        <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Buat Catatan Hutang</button>
+                        <button type="submit" class="btn btn-income" style="background-color: #9b59b6">Buat Sesi</button>
                     </form>
                 </div>
+                <div class="form-card">
+                    <h3>Riwayat Titipan</h3>
+                    <div id="list-titipan" style="margin-top:15px;"></div>
+                </div>
+            </div>
 
-                <div id="card-piutang" style="display: none;">
-                    <form id="form-piutang">
+            <!-- SUB-5: TRANSAKSI RUTIN BULANAN -->
+            <div id="sub-recur" class="subpage-content" style="display: none;">
+                <div class="form-card">
+                    <h3>Tambah Langganan / Tagihan Rutin</h3>
+                    <p class="sub-info">Otomatis memotong saldo & tercatat setiap awal bulan.</p>
+                    <form id="form-berulang" style="margin-top:15px;">
                         <div class="input-group">
-                            <label>Nama Peminjam</label>
-                            <input type="text" id="piutang-nama" placeholder="Si A pinjam uang..." required>
+                            <label>Nominal</label>
+                            <input type="text" inputmode="numeric" id="recur-jumlah" class="format-uang" placeholder="Contoh: 25.000" required>
                         </div>
                         <div class="input-group">
-                            <label>Kategori Dana</label>
-                            <select id="piutang-kategori" required>
+                            <label>Kategori</label>
+                            <select id="recur-kategori" required>
                                 <option value="kebutuhan">Kebutuhan</option>
                                 <option value="keinginan">Keinginan</option>
                             </select>
                         </div>
                         <div class="input-group-row">
                             <div class="input-group">
-                                <label>Nominal</label>
-                                <input type="text" inputmode="numeric" id="piutang-jumlah" class="format-uang" placeholder="Contoh: 100.000" required>
+                                <label>Nama Layanan / Tagihan</label>
+                                <input type="text" id="recur-nama" placeholder="Kuota, Spotify..." required>
                             </div>
                             <div class="input-group">
                                 <label>Ambil Dari</label>
-                                <select id="piutang-metode" required></select>
+                                <select id="recur-metode" required></select>
                             </div>
                         </div>
-                        <div class="input-group">
-                            <label>Catatan</label>
-                            <input type="text" id="piutang-catatan" placeholder="Cth: Lunas akhir bulan...">
-                        </div>
-                        <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Buat Catatan Piutang</button>
+                        <button type="submit" class="btn btn-income" style="background-color: var(--primary-orange)">Aktifkan Rutinitas</button>
                     </form>
                 </div>
-
-                <div class="list-plan-container" style="margin-top:20px;">
-                    <h4 style="color: var(--text-main); margin-bottom: 5px;">Daftar Hutang:</h4>
-                    <div id="list-hutang"></div>
-
-                    <h4 style="color: var(--text-main); margin-top: 20px; margin-bottom: 5px;">Daftar Piutang:</h4>
-                    <div id="list-piutang"></div>
+                <div class="form-card">
+                    <h3>Daftar Rutinitas Aktif</h3>
+                    <ul id="list-berulang" class="plan-list" style="margin-top:10px;"></ul>
                 </div>
             </div>
 
-            <!-- FITUR TITIPAN -->
-            <div class="form-card">
-                <h3>Uang Titipan</h3>
-                <p class="sub-info">Catat khusus rincian dan sisa kembalian dari uang titipan.</p>
-                <form id="form-titipan" style="margin-top:15px;">
+            <!-- SUB-6: SIMULATOR ANGGARAN (WHAT-IF SLIDERS) -->
+            <div id="sub-simulator" class="subpage-content" style="display: none;">
+                <div class="sim-hero-card">
+                    <span class="balance-title">SISA DANA CADANGAN</span>
+                    <h2 id="sim-sisa" class="balance-amount" style="font-size: 2.1rem;">Rp 155.000</h2>
+                    <div class="sim-metrics-row">
+                        <div>Total Keluar<br><strong id="sim-total-out">Rp 145.000</strong></div>
+                        <div>Aman / Hari (14hr)<br><strong id="sim-daily-14">Rp 11.071</strong></div>
+                        <div>Aman / Hari (30hr)<br><strong id="sim-daily-30">Rp 5.166</strong></div>
+                    </div>
+                </div>
+
+                <div class="form-card">
                     <div class="input-group">
-                        <label>Judul Titipan</label>
-                        <input type="text" id="titipan-judul" placeholder="Cth: Uang titipan dari Kakak..." required>
+                        <label>Uang Saku / Pegangan yang Diuji (Rp)</label>
+                        <input type="text" inputmode="numeric" id="sim-income" class="format-uang" value="300.000" oninput="updateSimulator()">
+                    </div>
+
+                    <div class="slider-item">
+                        <div class="slider-label"><span>Kuota Internet (28–30 Hari)</span><strong id="val-sim-kuota">Rp 25.000</strong></div>
+                        <input type="range" id="sim-kuota" min="0" max="150000" step="5000" value="25000" oninput="updateSimulator()">
+                    </div>
+
+                    <div class="slider-item">
+                        <div class="slider-label"><span>Bensin (Full Tank)</span><strong id="val-sim-bensin">Rp 30.000</strong></div>
+                        <input type="range" id="sim-bensin" min="0" max="200000" step="5000" value="30000" oninput="updateSimulator()">
+                    </div>
+
+                    <div class="slider-item">
+                        <div class="slider-label"><span>Makan Wajib di Luar</span><strong id="val-sim-makan">Rp 0</strong></div>
+                        <input type="range" id="sim-makan" min="0" max="500000" step="5000" value="0" oninput="updateSimulator()">
+                    </div>
+
+                    <div class="slider-item">
+                        <div class="slider-label"><span>Makan / Jajan Bosan & Stres</span><strong id="val-sim-bosan">Rp 45.000</strong></div>
+                        <input type="range" id="sim-bosan" min="0" max="300000" step="5000" value="45000" oninput="updateSimulator()">
+                    </div>
+
+                    <div class="slider-item">
+                        <div class="slider-label"><span>Belajar di Luar & Traktir</span><strong id="val-sim-nongkrong">Rp 45.000</strong></div>
+                        <input type="range" id="sim-nongkrong" min="0" max="300000" step="5000" value="45000" oninput="updateSimulator()">
+                    </div>
+
+                    <div class="slider-item">
+                        <div class="slider-label"><span>Print, Belajar & Keperluan Lain</span><strong id="val-sim-lain">Rp 0</strong></div>
+                        <input type="range" id="sim-lain" min="0" max="300000" step="5000" value="0" oninput="updateSimulator()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-7: KARTU MEMBER -->
+            <div id="sub-member" class="subpage-content" style="display: none;">
+                <div class="form-card">
+                    <h3>Tambah Kartu Member</h3>
+                    <p class="sub-info" style="margin-bottom: 15px;">Simpan screenshot barcode Alfamidi, Indogrosir, atau kartu diskon lainnya agar cepat di-scan di kasir.</p>
+                    <div class="input-group">
+                        <label>Nama Kartu / Toko</label>
+                        <input type="text" id="new-member-name" placeholder="Misal: Alfamidi...">
+                    </div>
+                    <div class="input-group">
+                        <label>Upload Barcode / QR Code</label>
+                        <input type="file" id="new-member-file" accept="image/png, image/jpeg, image/jpg" style="padding: 10px;">
+                        <p style="font-size: 0.72rem; color: var(--expense-red); margin-top: 4px; font-weight: 600;">*Gunakan screenshot barcode yang sudah di-crop kecil agar memori ringan.</p>
+                    </div>
+                    <button class="btn btn-income" style="background-color: #2980B9;" onclick="saveMemberCard()">Simpan Kartu</button>
+                </div>
+                <div class="form-card">
+                    <h3>Dompet Kartu Tersimpan</h3>
+                    <p class="sub-info" style="margin-bottom: 12px;">Ketuk gambar barcode untuk memperbesar layar penuh.</p>
+                    <div id="member-card-list" class="member-grid"></div>
+                </div>
+            </div>
+
+            <!-- SUB-8: ATUR DOMPET & METODE PEMBAYARAN -->
+            <div id="sub-wallet" class="subpage-content" style="display: none;">
+                <div class="form-card">
+                    <h3>Tambah Metode Pembayaran</h3>
+                    <p class="sub-info" style="margin-bottom: 15px;">Tambahkan e-wallet atau bank baru beserta logonya.</p>
+                    <div class="input-group">
+                        <label>Nama Dompet / Bank</label>
+                        <input type="text" id="new-method-name" placeholder="Ketik nama metode...">
+                    </div>
+                    <div class="input-group">
+                        <label>Upload Ikon / Logo (Opsional)</label>
+                        <input type="file" id="new-method-file" accept="image/png, image/jpeg, image/jpg" style="padding: 10px;">
+                        <p style="font-size: 0.72rem; color: #8492A6; margin-top: 4px;">*Gunakan file kecil rasio kotak 1:1.</p>
+                    </div>
+                    <button class="btn btn-income" onclick="saveNewMethod()">Tambah Dompet</button>
+                </div>
+                <div class="form-card">
+                    <h3>Daftar Dompet & Saldo Aktif</h3>
+                    <ul id="modal-method-list" class="transaction-list" style="margin-top: 10px;"></ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
+    <nav id="bottom-nav" class="bottom-nav">
+        <button class="bnav-btn active" id="nav-home" onclick="switchMainView('home')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Beranda</span>
+        </button>
+
+        <button class="bnav-btn" id="nav-analysis" onclick="switchMainView('analysis')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <span>Analisis</span>
+        </button>
+
+        <div class="bnav-fab-wrapper">
+            <button class="bnav-fab" onclick="openTxModal('expense')" title="Catat Transaksi">+</button>
+        </div>
+
+        <button class="bnav-btn" id="nav-history" onclick="switchMainView('history')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <span>Riwayat</span>
+        </button>
+
+        <button class="bnav-btn" id="nav-member-quick" onclick="openSubpage('member', 'Kartu Member')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            <span>Member</span>
+        </button>
+    </nav>
+
+    <!-- ==================== BOTTOM SHEET: CATAT TRANSAKSI ==================== -->
+    <div id="txModal" class="sheet-overlay" onclick="closeTxModalOnBackdrop(event)">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-header" style="margin-bottom: 12px;">
+                <h3 id="tx-sheet-title">Catat Transaksi</h3>
+                <span class="close-modal" onclick="closeTxModal()">×</span>
+            </div>
+
+            <div class="tab-container">
+                <button class="tab-btn active" id="tab-pengeluaran" onclick="switchForm('expense')">- Pengeluaran</button>
+                <button class="tab-btn" id="tab-pemasukan" onclick="switchForm('income')">+ Pemasukan</button>
+                <button class="tab-btn" id="tab-transfer" onclick="switchForm('transfer')">⇄ Mutasi</button>
+            </div>
+
+            <!-- FORM PENGELUARAN -->
+            <div id="card-pengeluaran">
+                <form id="form-pengeluaran">
+                    <div class="input-group">
+                        <label>Jumlah (Rp)</label>
+                        <input type="text" inputmode="numeric" id="out-jumlah" class="format-uang" placeholder="Contoh: 15.000" required>
                     </div>
                     <div class="input-group-row">
                         <div class="input-group">
-                            <label>Nominal</label>
-                            <input type="text" inputmode="numeric" id="titipan-modal" class="format-uang" placeholder="Contoh: 150.000" required>
+                            <label>Kategori</label>
+                            <select id="out-kategori" onchange="toggleCooldownOption()" required>
+                                <option value="kebutuhan">Kebutuhan</option>
+                                <option value="keinginan">Keinginan</option>
+                                <option value="tabungan">Tabungan</option>
+                            </select>
                         </div>
                         <div class="input-group">
-                            <label>Tanggal Diterima</label>
-                            <input type="date" id="titipan-tanggal" required>
+                            <label>
+                                Ambil Dari
+                                <a href="#" onclick="jumpToWalletManager(event)" class="btn-manage-method">⚙️ Atur</a>
+                            </label>
+                            <select id="out-metode" required></select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-income" style="background-color: #9b59b6">Buat Sesi</button>
+                    <div class="input-group">
+                        <label>Keterangan</label>
+                        <input type="text" id="out-detail" list="detail-list" placeholder="Kuota, Bensin, Jajan..." required>
+                        <datalist id="detail-list"></datalist>
+                    </div>
+
+                    <!-- TAG PEMICU / MOOD (1-TAP) -->
+                    <div class="input-group">
+                        <label>Tag Pemicu (Opsional)</label>
+                        <input type="hidden" id="out-mood-tag" value="">
+                        <div class="mood-chips-row" id="mood-chips-group">
+                            <button type="button" class="mood-chip" onclick="selectMoodTag(this, '#Wajib')">#Wajib</button>
+                            <button type="button" class="mood-chip" onclick="selectMoodTag(this, '#BosanStres')">#BosanStres</button>
+                            <button type="button" class="mood-chip" onclick="selectMoodTag(this, '#SosialTraktir')">#SosialTraktir</button>
+                            <button type="button" class="mood-chip" onclick="selectMoodTag(this, '#Darurat')">#Darurat</button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Catatan Tambahan (Opsional)</label>
+                        <input type="text" id="out-catatan" placeholder="Cth: Titipan teman / Varian cokelat...">
+                    </div>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label>Tanggal</label>
+                            <input type="date" id="out-tanggal" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Jam</label>
+                            <input type="time" id="out-waktu" required>
+                        </div>
+                    </div>
+
+                    <!-- OPSI COOLDOWN TIMER KHUSUS KATEGORI KEINGINAN -->
+                    <div id="cooldown-action-box" style="display: none; margin-bottom: 10px;">
+                        <button type="button" class="btn btn-cooldown" onclick="saveToCooldown()">⏳ Tahan 15 Menit Dulu (Anti-Impulsif)</button>
+                    </div>
+
+                    <button type="submit" id="btn-submit-expense" class="btn btn-expense">Simpan Pengeluaran</button>
                 </form>
-                
-                <div class="list-plan-container" style="margin-top:20px;">
-                    <h4 style="color: var(--text-main); margin-bottom: 5px;">Riwayat Titipan:</h4>
-                    <div id="list-titipan"></div>
-                </div>
             </div>
 
-        </section>
+            <!-- FORM PEMASUKAN -->
+            <div id="card-pemasukan" style="display: none;">
+                <form id="form-pemasukan">
+                    <div class="input-group">
+                        <label>Jumlah (Rp)</label>
+                        <input type="text" inputmode="numeric" id="in-jumlah" class="format-uang" placeholder="Contoh: 200.000" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Sumber</label>
+                        <input type="text" id="in-sumber" list="sumber-list" placeholder="Ortu, Jualan, Freelance..." required>
+                        <datalist id="sumber-list"></datalist>
+                    </div>
+                    <div class="input-group">
+                        <label>Catatan (Opsional)</label>
+                        <input type="text" id="in-catatan" placeholder="Cth: Uang saku mingguan...">
+                    </div>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label>Tanggal</label>
+                            <input type="date" id="in-tanggal" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Jam</label>
+                            <input type="time" id="in-waktu" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>
+                            Simpan Ke
+                            <a href="#" onclick="jumpToWalletManager(event)" class="btn-manage-method">⚙️ Atur</a>
+                        </label>
+                        <select id="in-metode" required></select>
+                    </div>
+                    <button type="submit" id="btn-submit-income" class="btn btn-income">Simpan Pemasukan</button>
+                </form>
+            </div>
 
-        <footer class="app-footer">
-            <img src="assets/img/footer.png" alt="Footer Background" class="footer-bg">
-        </footer>
-    </div>
-
-    <!-- MODAL METODE PEMBAYARAN -->
-    <div id="methodModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Katalog Metode Pembayaran</h3>
-                <span class="close-modal" onclick="closeMethodModal()">&times;</span>
-            </div>
-            <p class="sub-info" style="margin-bottom: 15px;">Tambahkan e-wallet atau bank baru beserta logonya.</p>
-            
-            <div class="input-group">
-                <label>Nama Metode</label>
-                <input type="text" id="new-method-name" placeholder="Ketik nama metode...">
-            </div>
-            <div class="input-group">
-                <label>Upload Ikon / Logo</label>
-                <input type="file" id="new-method-file" accept="image/png, image/jpeg, image/jpg" style="padding: 10px;">
-                <p style="font-size: 0.7rem; color: #8492A6; margin-top: 4px;">*Gunakan file kecil rasio kotak 1:1.</p>
-            </div>
-            <button class="btn btn-income" onclick="saveNewMethod()" style="margin-bottom: 20px;">Tambah Metode</button>
-            
-            <h4 style="font-size: 0.95rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Daftar Tersimpan</h4>
-            <ul id="modal-method-list" class="transaction-list" style="max-height: 150px; overflow-y: auto;"></ul>
-        </div>
-    </div>
-
-    <!-- MODAL KARTU MEMBER -->
-    <div id="memberModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="display: flex; align-items: center;">
-                    <img src="assets/img/member2.png" alt="Ikon" style="width: 26px; height: 26px; margin-right: 8px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                    <span style="display:none; margin-right: 8px;">💳</span>
-                    Kartu Member
-                </h3>
-                <span class="close-modal" onclick="closeMemberModal()">&times;</span>
-            </div>
-            
-            <p class="sub-info" style="margin-bottom: 15px;">Simpan screenshot barcode Indogrosir, Alfamidi, atau kartu diskon lainnya di sini.</p>
-            
-            <div class="input-group">
-                <label>Nama Kartu / Toko</label>
-                <input type="text" id="new-member-name" placeholder="Misal: Alfamidi...">
-            </div>
-            <div class="input-group">
-                <label>Upload Barcode / QR Code</label>
-                <input type="file" id="new-member-file" accept="image/png, image/jpeg, image/jpg" style="padding: 10px;">
-                <p style="font-size: 0.7rem; color: var(--expense-red); margin-top: 4px; font-weight: bold;">*Wajib gunakan screenshot barcode yang sudah di-crop sekecil mungkin agar memori HP tidak penuh.</p>
-            </div>
-            <button class="btn btn-income" style="background-color: #2980B9;" onclick="saveMemberCard()" style="margin-bottom: 20px;">Simpan Kartu</button>
-            
-            <h4 style="font-size: 0.95rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 20px;">Daftar Kartu Tersimpan</h4>
-            <div id="member-card-list" class="member-grid" style="margin-top: 10px;">
-                <!-- Di-render via JS -->
+            <!-- FORM MUTASI -->
+            <div id="card-transfer" style="display: none;">
+                <form id="form-transfer">
+                    <p class="sub-info" style="margin-bottom: 15px;">Mutasi saldo antar dompet tidak memengaruhi grafik analisis maupun total saldo.</p>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label>Jumlah</label>
+                            <input type="text" inputmode="numeric" id="tf-jumlah" class="format-uang" placeholder="Cth: 50.000" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Biaya Admin</label>
+                            <input type="text" inputmode="numeric" id="tf-admin" class="format-uang" placeholder="Gratis = kosong">
+                        </div>
+                    </div>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label>Dari</label>
+                            <select id="tf-metode-dari" required></select>
+                        </div>
+                        <div class="input-group" style="display: flex; align-items: center; justify-content: center; max-width: 30px; margin-top: 15px;">
+                            <span style="font-size: 1.5rem; color: var(--text-muted);">➡</span>
+                        </div>
+                        <div class="input-group">
+                            <label>Ke</label>
+                            <select id="tf-metode-ke" required></select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Catatan (Opsional)</label>
+                        <input type="text" id="tf-catatan" placeholder="Cth: Top up GoPay...">
+                    </div>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label>Tanggal</label>
+                            <input type="date" id="tf-tanggal" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Jam</label>
+                            <input type="time" id="tf-waktu" required>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-submit-transfer" class="btn btn-transfer">Mutasi Saldo</button>
+                </form>
             </div>
         </div>
     </div>
