@@ -1,0 +1,6 @@
+{
+  "appId": "com.pockita.app.v2",
+  "appName": "Pockita",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
