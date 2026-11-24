@@ -609,7 +609,7 @@ function renderTitipan() {
         });
         if (itemsHtml === '') itemsHtml = `<li style="text-align:center; font-size:0.8rem; color:var(--text-muted); padding: 5px 0;">Belum ada barang ditambahkan.</li>`;
 
-        let formattedDate = new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        let formattedDate = new Date(t.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         container.innerHTML += `
         <div class="person-group" style="border-color: var(--reze-violet);">
             <button class="person-header" onclick="toggleTitipan(${t.id})" style="background: #F4ECF8; color: var(--reze-violet);">
@@ -664,7 +664,7 @@ function setHistoryMode(mode) {
 }
 
 // ==================== RENDER UTAMA APLIKASI ====================
-function buildTransactionItemHTML(tx) {
+function buildTransactionItemHTML(tx, showDate = false) {
     let isAuto = tx.desc.startsWith('Auto: ');
     let isTarget = tx.desc.startsWith('Target: ');
     let isBeriPiutang = tx.desc.startsWith('Memberi Piutang: ');
@@ -709,12 +709,19 @@ function buildTransactionItemHTML(tx) {
 
     let catatanUI = tx.catatan ? `<div class="tx-note">📝 ${tx.catatan}</div>` : '';
 
+    let dateMeta = '';
+    if (showDate && tx.date) {
+        const dObj = new Date(tx.date + 'T00:00:00');
+        const formattedShortDate = dObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        dateMeta = `${formattedShortDate} • `;
+    }
+
     return `
         <div class="tx-kiri">
             <div class="tx-title">${cleanDesc}</div>
             ${catatanUI}
             <div class="pill-container">${pillKategori}${pillExtra}</div>
-            <span class="tx-meta">${tx.method} • Jam ${tx.time}</span>
+            <span class="tx-meta">${tx.method} • ${dateMeta}Jam ${tx.time}</span>
         </div>
         <div class="tx-kanan">
             <div class="tx-amount ${txColorClass}">${sign} ${txDisplayAmount}</div>
@@ -772,7 +779,7 @@ function renderApp() {
         }
     }
 
-    // RENDER 3 TRANSAKSI TERAKHIR DI BERANDA
+    // RENDER 3 TRANSAKSI TERAKHIR DI BERANDA (DENGAN TANGGAL)
     const recentTxs = transactions.slice().sort((a, b) => {
         const timeA = new Date((a.date || '') + 'T' + (a.time || '00:00')).getTime() || a.id;
         const timeB = new Date((b.date || '') + 'T' + (b.time || '00:00')).getTime() || b.id;
@@ -787,7 +794,7 @@ function renderApp() {
         recentTxs.forEach(tx => {
             const li = document.createElement('li');
             li.className = 'transaction-item';
-            li.innerHTML = buildTransactionItemHTML(tx);
+            li.innerHTML = buildTransactionItemHTML(tx, true);
             ulRecent.appendChild(li);
         });
         homeRecentContainer.innerHTML = '';
@@ -857,7 +864,7 @@ function renderApp() {
             const sortedDates = Object.keys(txsByDate).sort((a, b) => new Date(b) - new Date(a));
 
             sortedDates.forEach(dateStr => {
-                const d = new Date(dateStr);
+                const d = new Date(dateStr + 'T00:00:00');
                 const formattedDate = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
                 const dateHeader = document.createElement('div');
@@ -875,7 +882,7 @@ function renderApp() {
                 }).forEach(tx => {
                     const li = document.createElement('li');
                     li.className = 'transaction-item';
-                    li.innerHTML = buildTransactionItemHTML(tx);
+                    li.innerHTML = buildTransactionItemHTML(tx, false);
                     ul.appendChild(li);
                 });
                 groupDiv.appendChild(ul);
