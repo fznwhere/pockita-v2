@@ -651,16 +651,36 @@ function checkAndApplyRecurring() {
 
 function setHistoryMode(mode) {
     currentHistoryMode = mode;
-    if (mode === 'bulan') {
-        document.getElementById('btn-mode-bulan').className = 'time-btn active';
-        document.getElementById('btn-mode-hari').className = 'time-btn';
-        document.getElementById('filter-hari').style.display = 'none';
-    } else {
-        document.getElementById('btn-mode-bulan').className = 'time-btn';
-        document.getElementById('btn-mode-hari').className = 'time-btn active';
-        document.getElementById('filter-hari').style.display = 'inline-block';
-    }
+    document.getElementById('btn-mode-semua').className = mode === 'semua' ? 'time-btn active' : 'time-btn';
+    document.getElementById('btn-mode-bulan').className = mode === 'bulan' ? 'time-btn active' : 'time-btn';
+    document.getElementById('btn-mode-hari').className = mode === 'hari' ? 'time-btn active' : 'time-btn';
+    document.getElementById('filter-hari').style.display = mode === 'hari' ? 'inline-block' : 'none';
     renderApp();
+}
+
+function clearHistorySearch() {
+    const input = document.getElementById('search-history');
+    if (input) input.value = '';
+    renderApp();
+}
+
+function matchesHistorySearch(tx, rawSearch) {
+    if (!rawSearch) return true;
+    const numericQuery = rawSearch.replace(/[^0-9]/g, '');
+    const isPureAmountQuery = /^[rp\s.,0-9]+$/i.test(rawSearch) && numericQuery.length > 0;
+
+    if (isPureAmountQuery && tx.amount.toString().includes(numericQuery)) {
+        return true;
+    }
+
+    return (
+        (tx.desc && tx.desc.toLowerCase().includes(rawSearch)) ||
+        (tx.catatan && tx.catatan.toLowerCase().includes(rawSearch)) ||
+        (tx.method && tx.method.toLowerCase().includes(rawSearch)) ||
+        (tx.methodTo && tx.methodTo.toLowerCase().includes(rawSearch)) ||
+        (tx.category && tx.category.toLowerCase().includes(rawSearch)) ||
+        (tx.moodTag && tx.moodTag.toLowerCase().includes(rawSearch))
+    );
 }
 
 // ==================== RENDER UTAMA APLIKASI ====================
@@ -740,6 +760,11 @@ function renderApp() {
     const filterTipe = document.getElementById('filter-tipe') ? document.getElementById('filter-tipe').value : 'Utama';
     const filterMood = document.getElementById('filter-mood') ? document.getElementById('filter-mood').value : 'Semua';
     
+    const searchInput = document.getElementById('search-history');
+    const rawSearch = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const clearBtn = document.getElementById('btn-clear-search');
+    if (clearBtn) clearBtn.style.display = rawSearch ? 'flex' : 'none';
+
     transactionContainer.innerHTML = '';
     let grandTotalSaldo = 0;
     let balancesByMethod = {};
@@ -801,9 +826,13 @@ function renderApp() {
         homeRecentContainer.appendChild(ulRecent);
     }
 
-    // RENDER HALAMAN RIWAYAT LENGKAP
+    // RENDER HALAMAN RIWAYAT LENGKAP (MENDUKUNG MODE SEMUA & PENCARIAN LINTAS WAKTU)
+    const isAllTimeFlatView = currentHistoryMode === 'semua' || rawSearch !== '';
     let displayTransactions = [];
-    if (currentHistoryMode === 'bulan') {
+
+    if (isAllTimeFlatView) {
+        displayTransactions = transactions.slice();
+    } else if (currentHistoryMode === 'bulan') {
         displayTransactions = transactions.filter(tx => tx.date.startsWith(activeMonth));
     } else {
         const specificDate = document.getElementById('filter-hari').value;
@@ -835,8 +864,32 @@ function renderApp() {
         displayTransactions = displayTransactions.filter(tx => tx.method === currentFilter || (tx.type === 'transfer' && tx.methodTo === currentFilter)); 
     }
 
+    if (rawSearch !== '') {
+        displayTransactions = displayTransactions.filter(tx => matchesHistorySearch(tx, rawSearch));
+    }
+
     if (displayTransactions.length === 0) {
-        transactionContainer.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Tidak ada riwayat transaksi di filter ini.</div>`;
+        transactionContainer.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Tidak ada riwayat transaksi yang cocok.</div>`;
+    } else if (isAllTimeFlatView) {
+        if (rawSearch !== '') {
+            transactionContainer.innerHTML = `<div class="search-scope-info">🔍 Ditemukan ${displayTransactions.length} transaksi dari semua bulan</div>`;
+        }
+
+        const ulFlat = document.createElement('ul');
+        ulFlat.className = 'transaction-list';
+
+        displayTransactions.sort((a, b) => {
+            const timeA = new Date((a.date || '') + 'T' + (a.time || '00:00')).getTime() || a.id;
+            const timeB = new Date((b.date || '') + 'T' + (b.time || '00:00')).getTime() || b.id;
+            return timeB === timeA ? b.id - a.id : timeB - timeA;
+        }).forEach(tx => {
+            const li = document.createElement('li');
+            li.className = 'transaction-item';
+            li.innerHTML = buildTransactionItemHTML(tx, true);
+            ulFlat.appendChild(li);
+        });
+
+        transactionContainer.appendChild(ulFlat);
     } else {
         const groupedTx = {};
         displayTransactions.forEach(tx => {
@@ -1069,6 +1122,7 @@ function renderCharts() {
 
     if (monthlyTx.length === 0) {
         document.getElementById('empty-realisasi-chart').style.display = 'flex';
+        document.getElementById('chartRealisasi').style.display = 'block';
         document.getElementById('chartRealisasi').style.display = 'none';
     } else {
         document.getElementById('empty-realisasi-chart').style.display = 'none';
@@ -1494,12 +1548,16 @@ function setDefaultDateTime() {
 
 function exportToExcel() {
     const activeMonth = getSelectedMonth();
-    let displayTx = currentHistoryMode === 'bulan'
-        ? transactions.filter(tx => tx.date.startsWith(activeMonth))
-        : transactions.filter(tx => tx.date === document.getElementById('filter-hari').value);
-    
-    if (displayTx.length === 0) return alert("Tidak ada data untuk diekspor!");
+    const searchInput = document.getElementById('search-history');
+    const rawSearch = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const isAllTime = currentHistoryMode === 'semua' || rawSearch !== '';
 
+    let displayTx = isAllTime
+        ? transactions.slice()
+        : (currentHistoryMode === 'bulan'
+            ? transactions.filter(tx => tx.date.startsWith(activeMonth))
+            : transactions.filter(tx => tx.date === document.getElementById('filter-hari').value));
+    
     const filterTipe = document.getElementById('filter-tipe').value;
     const currentFilter = document.getElementById('filter-metode').value;
     const filterMood = document.getElementById('filter-mood').value;
@@ -1509,6 +1567,9 @@ function exportToExcel() {
 
     if (filterMood !== 'Semua') displayTx = displayTx.filter(tx => tx.moodTag === filterMood);
     if (currentFilter !== 'Semua') displayTx = displayTx.filter(tx => tx.method === currentFilter || (tx.type === 'transfer' && tx.methodTo === currentFilter));
+    if (rawSearch !== '') displayTx = displayTx.filter(tx => matchesHistorySearch(tx, rawSearch));
+
+    if (displayTx.length === 0) return alert("Tidak ada data untuk diekspor!");
     
     let csvContent = "data:text/csv;charset=utf-8,\uFEFFTanggal,Jam,Tipe,Kategori,Tag,Detail,Catatan,Metode,Jumlah (Rp)\n";
     displayTx.sort((a, b) => {
@@ -1528,7 +1589,9 @@ function exportToExcel() {
 
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
-    let fileName = currentHistoryMode === 'bulan' ? `Pockita_Laporan_${activeMonth}.csv` : `Pockita_Laporan_Harian_${document.getElementById('filter-hari').value}.csv`;
+    let fileName = isAllTime
+        ? `Pockita_Laporan_Semua_Waktu.csv`
+        : (currentHistoryMode === 'bulan' ? `Pockita_Laporan_${activeMonth}.csv` : `Pockita_Laporan_Harian_${document.getElementById('filter-hari').value}.csv`);
     link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();

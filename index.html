@@ -204,6 +204,13 @@
                     <button class="btn-export" onclick="exportToExcel()">📥 Excel</button>
                 </div>
 
+                <!-- KOLOM PENCARIAN LINTAS WAKTU -->
+                <div class="history-search-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-history" placeholder="Cari nominal (cth: 100.000), ket, atau catatan..." oninput="renderApp()">
+                    <button type="button" id="btn-clear-search" onclick="clearHistorySearch()" style="display:none;" title="Hapus pencarian">×</button>
+                </div>
+
                 <div class="filter-bar-grid">
                     <select id="filter-tipe" class="filter-dropdown" onchange="renderApp()">
                         <option value="Utama">Utama</option>
@@ -225,8 +232,9 @@
                 
                 <div class="history-time-toggle">
                     <div class="time-switches">
-                        <button id="btn-mode-bulan" class="time-btn active" onclick="setHistoryMode('bulan')">Lihat Bulanan</button>
-                        <button id="btn-mode-hari" class="time-btn" onclick="setHistoryMode('hari')">Lihat Harian</button>
+                        <button id="btn-mode-semua" class="time-btn" onclick="setHistoryMode('semua')">Semua</button>
+                        <button id="btn-mode-bulan" class="time-btn active" onclick="setHistoryMode('bulan')">Bulanan</button>
+                        <button id="btn-mode-hari" class="time-btn" onclick="setHistoryMode('hari')">Harian</button>
                     </div>
                     <input type="date" id="filter-hari" style="display: none;" class="filter-dropdown" onchange="renderApp()">
                 </div>

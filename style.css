@@ -216,8 +216,59 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .slider-label strong { color: var(--primary-orange); }
 .slider-item input[type="range"] { width: 100%; accent-color: var(--primary-orange); cursor: pointer; }
 
-/* HISTORY & FILTERS */
+/* HISTORY, SEARCH & FILTERS */
 .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1.5px solid var(--bg-app); padding-bottom: 10px; }
+
+.history-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #FCFCFD;
+    border: 1.5px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+.history-search-box:focus-within {
+    border-color: var(--primary-orange);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.1);
+}
+.history-search-box svg { color: var(--text-muted); flex-shrink: 0; }
+.history-search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.82rem;
+    color: var(--text-main);
+    width: 100%;
+}
+#btn-clear-search {
+    background: #EAECEF;
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.search-scope-info {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--primary-orange);
+    background: #FFF2EC;
+    padding: 6px 10px;
+    border-radius: 9px;
+    margin-bottom: 10px;
+}
+
 .filter-bar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
 .btn-export { background-color: var(--income-green); color: var(--white); border: none; padding: 6px 12px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 .filter-dropdown { padding: 7px 8px; border-radius: 10px; border: 1.5px solid var(--border-color); font-size: 0.78rem; font-weight: 700; color: var(--text-main); background: var(--white); outline: none; width: 100%; }
