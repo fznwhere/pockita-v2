@@ -1,0 +1,54 @@
+name: Build Pockita v2 APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Siapkan folder web (www)
+        run: |
+          mkdir -p www
+          cp index.html manifest.json style.css script.js www/
+          cp -r assets www/
+
+      - name: Install Capacitor
+        run: npm install
+
+      - name: Generate Project Android & Ikon
+        run: |
+          npx cap add android
+          mkdir -p resources
+          cp assets/img/pochita.png resources/icon.png
+          npx @capacitor/assets generate --android || true
+          npx cap sync android
+
+      - name: Build Debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload Hasil APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pockita-v2-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
