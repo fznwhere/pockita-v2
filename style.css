@@ -101,8 +101,8 @@ body { background-color: var(--bg-app); color: var(--text-main); display: flex; 
 .icon-power   { background: #FDECEC; color: var(--expense-red); }
 
 /* SUBPAGE VIEW HEADER & TOMBOL KEMBALI (TANPA KOTAK) */
-.subpage-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; position: sticky; top: 0; background: rgba(248, 249, 250, 0.92); backdrop-filter: blur(10px); padding: 10px 4px; z-index: 50; }
-.btn-back { background: transparent; border: none; color: var(--text-main); padding: 4px 2px; font-size: 0.9rem; font-weight: 700; cursor: pointer; box-shadow: none; transition: opacity 0.15s; }
+.subpage-header { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; position: sticky; top: 0; background: rgba(248, 249, 250, 0.92); backdrop-filter: blur(10px); padding: 10px 4px; z-index: 50; }
+.btn-back { background: transparent; border: none; color: var(--text-main); padding: 4px 2px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: none; transition: opacity 0.15s; }
 .btn-back:active { opacity: 0.6; }
 .subpage-header h2 { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
 
