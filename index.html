@@ -7,7 +7,8 @@
     <link rel="icon" type="image/png" href="assets/img/pochita.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Simpan file chart.umd.min.js ke folder assets/js/ agar grafik berjalan 100% offline -->
+    <script src="assets/js/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -96,7 +97,7 @@
                         <span>Rutin Bulanan</span>
                     </button>
 
-                    <!-- Makima (Hitam Arang) -->
+                    <!-- Makima -->
                     <button class="grid-item" onclick="openSubpage('simulator', 'Simulator Anggaran')">
                         <div class="grid-icon-box icon-makima">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
@@ -104,12 +105,12 @@
                         <span>Simulator</span>
                     </button>
 
-                    <!-- Kishibe -->
-                    <button class="grid-item" onclick="openSubpage('member', 'Kartu Member')">
+                    <!-- Kishibe (Daftar Belanja) -->
+                    <button class="grid-item" onclick="openSubpage('wishlist', 'Daftar Belanja')">
                         <div class="grid-icon-box icon-kishibe">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                         </div>
-                        <span>Kartu Member</span>
+                        <span>Daftar Belanja</span>
                     </button>
 
                     <!-- Power -->
@@ -140,12 +141,37 @@
         <div id="view-analysis" class="main-view" style="display: none;">
             <div class="view-top-title">
                 <h2>Analisis Keuangan</h2>
-                <p class="sub-info">Pantau rasio 50/30/20, pola pemicu jajan, dan tren bulanan.</p>
+                <p class="sub-info">Pantau rasio alokasi dana, pola pemicu jajan, dan tren bulanan.</p>
             </div>
 
             <div class="status-budget-card">
                 <h3>Status Keuangan Bulan Ini</h3>
-                <p class="sub-info" style="text-align: center; margin-top: -10px; margin-bottom: 15px;">Tap kartu untuk melihat nominal maksimal</p>
+                <p class="sub-info" style="text-align: center; margin-top: -10px; margin-bottom: 12px;">Tap kartu untuk melihat nominal maksimal</p>
+
+                <!-- PEMILIH MODE RASIO (DEFAULT 50/30/20) -->
+                <div class="ratio-switcher" id="ratio-preset-group">
+                    <button type="button" class="ratio-pill active" data-preset="50-30-20" onclick="setRatioPreset('50-30-20')">50/30/20</button>
+                    <button type="button" class="ratio-pill" data-preset="70-20-10" onclick="setRatioPreset('70-20-10')">70/20/10</button>
+                    <button type="button" class="ratio-pill" data-preset="50-20-30" onclick="setRatioPreset('50-20-30')">50/20/30</button>
+                    <button type="button" class="ratio-pill" data-preset="custom" onclick="setRatioPreset('custom')">Custom</button>
+                </div>
+
+                <!-- INPUT CUSTOM RASIO -->
+                <div id="custom-ratio-box" class="custom-ratio-box" style="display: none;">
+                    <div>
+                        <label>Kebutuhan %</label>
+                        <input type="number" id="ratio-need" min="0" max="100" value="50" onchange="applyCustomRatio()">
+                    </div>
+                    <div>
+                        <label>Keinginan %</label>
+                        <input type="number" id="ratio-want" min="0" max="100" value="30" onchange="applyCustomRatio()">
+                    </div>
+                    <div>
+                        <label>Tabungan %</label>
+                        <input type="number" id="ratio-save" min="0" max="100" value="20" onchange="applyCustomRatio()">
+                    </div>
+                </div>
+
                 <div class="status-grid">
                     <div class="flip-card" onclick="this.classList.toggle('flipped')">
                         <div class="flip-card-inner">
@@ -186,7 +212,7 @@
 
             <div class="charts-card">
                 <div class="chart-wrapper">
-                    <h4>Target Porsi Ideal 50/30/20</h4>
+                    <h4 id="chart-target-title">Target Porsi Ideal 50/30/20</h4>
                     <div id="empty-target-chart" class="chart-empty-state" style="display: none;"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Empty"><span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Belum ada Pemasukan Bulan Ini</span></div>
                     <canvas id="chartTarget"></canvas>
                 </div>
@@ -206,30 +232,53 @@
 
         <!-- ==================== VIEW 3: RIWAYAT LENGKAP ==================== -->
         <div id="view-history" class="main-view" style="display: none;">
+            
+            <!-- KALENDER HARIAN LANGSUNG DI RIWAYAT -->
+            <div class="glass-card history-cal-card">
+                <div class="section-mini-header" style="margin-bottom: 10px;">
+                    <h3 id="history-cal-title">Kalender Harian</h3>
+                    <button type="button" class="btn-link" id="btn-toggle-cal" onclick="toggleHistoryCalendar()">Sembunyikan</button>
+                </div>
+                <div id="history-cal-body">
+                    <div class="cal-weekdays">
+                        <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                    </div>
+                    <div id="history-calendar-grid" class="cal-days-grid"></div>
+                    <div class="cal-legend">
+                        <span><i class="dot-in"></i> Masuk</span>
+                        <span><i class="dot-out"></i> Keluar</span>
+                        <span style="margin-left:auto;">Ketuk tanggal untuk filter</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="history-card">
                 <div class="history-header">
                     <h3>Riwayat Transaksi</h3>
-                    <button class="btn-export" onclick="exportToExcel()">📥 Excel</button>
+                    <div class="history-header-actions">
+                        <button class="btn-backup" onclick="openBackupModal()">💾 Backup</button>
+                        <button class="btn-export" onclick="exportToExcel()">📥 Excel</button>
+                    </div>
                 </div>
 
-                <!-- KOLOM PENCARIAN LINTAS WAKTU -->
+                <!-- KOLOM PENCARIAN LINTAS WAKTU (DEBOUNCED) -->
                 <div class="history-search-box">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="search-history" placeholder="Cari nominal (cth: 100.000), ket, atau catatan..." oninput="renderApp()">
+                    <input type="text" id="search-history" placeholder="Cari nominal (cth: 100.000), ket, atau catatan..." oninput="onHistorySearchInput()">
                     <button type="button" id="btn-clear-search" onclick="clearHistorySearch()" style="display:none;" title="Hapus pencarian">×</button>
                 </div>
 
                 <div class="filter-bar-grid">
-                    <select id="filter-tipe" class="filter-dropdown" onchange="renderApp()">
+                    <select id="filter-tipe" class="filter-dropdown" onchange="renderHistoryList()">
                         <option value="Utama">Utama</option>
                         <option value="income">Pemasukan</option>
                         <option value="expense">Pengeluaran</option>
                         <option value="transfer">Mutasi</option>
                     </select>
-                    <select id="filter-metode" class="filter-dropdown" onchange="renderApp()">
+                    <select id="filter-metode" class="filter-dropdown" onchange="renderHistoryList()">
                         <option value="Semua">Semua Dompet</option>
                     </select>
-                    <select id="filter-mood" class="filter-dropdown" onchange="renderApp()">
+                    <select id="filter-mood" class="filter-dropdown" onchange="renderHistoryList()">
                         <option value="Semua">Semua Tag</option>
                         <option value="#Wajib">#Wajib</option>
                         <option value="#BosanStres">#BosanStres</option>
@@ -244,8 +293,11 @@
                         <button id="btn-mode-bulan" class="time-btn active" onclick="setHistoryMode('bulan')">Bulanan</button>
                         <button id="btn-mode-hari" class="time-btn" onclick="setHistoryMode('hari')">Harian</button>
                     </div>
-                    <input type="date" id="filter-hari" style="display: none;" class="filter-dropdown" onchange="renderApp()">
+                    <input type="date" id="filter-hari" style="display: none;" class="filter-dropdown" onchange="onFilterDateChange()">
                 </div>
+
+                <!-- RINGKASAN TOTAL HASIL FILTER -->
+                <div id="history-summary-bar" class="history-summary-bar"></div>
 
                 <div id="daftar-transaksi" class="transaction-container"></div>
             </div>
@@ -266,7 +318,7 @@
 
                 <div class="form-card">
                     <h3>Atur Siklus Uang Saku</h3>
-                    <p class="sub-info" style="margin-bottom: 14px;">Bagi pegangan uang saku saat ini ke target jumlah hari bertahan agar tidak habis di awal minggu.</p>
+                    <p class="sub-info" style="margin-bottom: 14px;">Bagi pegangan uang saku saat ini ke target jumlah hari bertahan (otomatis mengecualikan setoran Celengan & Hutang/Piutang).</p>
                     <form id="form-cycle">
                         <div class="input-group">
                             <label>
@@ -404,7 +456,7 @@
             <div id="sub-titipan" class="subpage-content" style="display: none;">
                 <div class="form-card">
                     <h3>Buat Sesi Titipan</h3>
-                    <p class="sub-info">Catat rincian belanja & sisa kembalian dari uang titipan.</p>
+                    <p class="sub-info">Catat rincian belanja & sisa kembalian dari uang titipan (terpisah dari saldo pribadi).</p>
                     <form id="form-titipan" style="margin-top:15px;">
                         <div class="input-group">
                             <label>Judul Titipan</label>
@@ -429,11 +481,11 @@
                 </div>
             </div>
 
-            <!-- SUB-5: TRANSAKSI RUTIN BULANAN -->
+            <!-- SUB-5: TRANSAKSI RUTIN BULANAN (CUSTOM TANGGAL & JAM) -->
             <div id="sub-recur" class="subpage-content" style="display: none;">
                 <div class="form-card">
                     <h3>Tambah Langganan / Tagihan Rutin</h3>
-                    <p class="sub-info">Otomatis memotong saldo & tercatat setiap awal bulan.</p>
+                    <p class="sub-info">Otomatis memotong saldo & tercatat sesuai jadwal tanggal dan jam tiap bulan.</p>
                     <form id="form-berulang" style="margin-top:15px;">
                         <div class="input-group">
                             <label>Nominal</label>
@@ -456,11 +508,21 @@
                                 <select id="recur-metode" required></select>
                             </div>
                         </div>
+                        <div class="input-group-row">
+                            <div class="input-group">
+                                <label>Tanggal Tiap Bulan (1–31)</label>
+                                <input type="number" id="recur-tanggal" min="1" max="31" value="1" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Jam Otomatis</label>
+                                <input type="time" id="recur-waktu" value="07:00" required>
+                            </div>
+                        </div>
                         <button type="submit" class="btn btn-income" style="background-color: var(--kobeni-burgundy)">Aktifkan Rutinitas</button>
                     </form>
                 </div>
                 <div class="form-card">
-                    <h3>Daftar Rutinitas Aktif</h3>
+                    <h3>Daftar Rutinitas</h3>
                     <ul id="list-berulang" class="plan-list" style="margin-top:10px;"></ul>
                 </div>
             </div>
@@ -488,10 +550,8 @@
                         <button type="button" class="btn-link" onclick="resetSimulatorItems()">Reset Default</button>
                     </div>
 
-                    <!-- DAFTAR SLIDER DINAMIS -->
                     <div id="sim-sliders-container"></div>
 
-                    <!-- FORM TAMBAH POS CUSTOM -->
                     <div class="sim-add-box">
                         <label style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px;">+ Tambah Pos Pengeluaran Custom</label>
                         <div class="sim-add-row">
@@ -503,26 +563,39 @@
                 </div>
             </div>
 
-            <!-- SUB-7: KARTU MEMBER -->
-            <div id="sub-member" class="subpage-content" style="display: none;">
+            <!-- SUB-7: DAFTAR BELANJA (PENGGANTI MEMBER DI GRID) -->
+            <div id="sub-wishlist" class="subpage-content" style="display: none;">
                 <div class="form-card">
-                    <h3>Tambah Kartu Member</h3>
-                    <p class="sub-info" style="margin-bottom: 15px;">Simpan screenshot barcode Alfamidi, Indogrosir, atau kartu diskon lainnya agar cepat di-scan di kasir.</p>
-                    <div class="input-group">
-                        <label>Nama Kartu / Toko</label>
-                        <input type="text" id="new-member-name" placeholder="Misal: Alfamidi...">
-                    </div>
-                    <div class="input-group">
-                        <label>Upload Barcode / QR Code</label>
-                        <input type="file" id="new-member-file" accept="image/png, image/jpeg, image/jpg" style="padding: 10px;">
-                        <p style="font-size: 0.72rem; color: var(--expense-red); margin-top: 4px; font-weight: 600;">*Gunakan screenshot barcode yang sudah di-crop kecil agar memori ringan.</p>
-                    </div>
-                    <button class="btn btn-income" style="background-color: var(--suit-slate);" onclick="saveMemberCard()">Simpan Kartu</button>
+                    <h3>Tambah Rencana Belanja</h3>
+                    <p class="sub-info" style="margin-bottom: 14px;">Catat barang yang perlu dibeli agar tidak lupa atau beli impulsif. Ketuk <b>Catat</b> saat sudah dibeli.</p>
+                    <form id="form-wishlist">
+                        <div class="input-group">
+                            <label>Nama Barang / Keperluan</label>
+                            <input type="text" id="wish-nama" placeholder="Cth: Sabun muka, Kabel data, Buku..." required>
+                        </div>
+                        <div class="input-group-row">
+                            <div class="input-group">
+                                <label>Estimasi Harga (Rp)</label>
+                                <input type="text" inputmode="numeric" id="wish-harga" class="format-uang" placeholder="Opsional">
+                            </div>
+                            <div class="input-group">
+                                <label>Kategori</label>
+                                <select id="wish-kategori">
+                                    <option value="kebutuhan">Kebutuhan</option>
+                                    <option value="keinginan">Keinginan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-income" style="background-color: var(--suit-slate);">Tambah ke Daftar</button>
+                    </form>
                 </div>
+
                 <div class="form-card">
-                    <h3>Dompet Kartu Tersimpan</h3>
-                    <p class="sub-info" style="margin-bottom: 12px;">Ketuk gambar barcode untuk memperbesar layar penuh.</p>
-                    <div id="member-card-list" class="member-grid"></div>
+                    <div class="section-mini-header">
+                        <h3>Daftar Belanja</h3>
+                        <span id="wishlist-total-est" style="color: var(--primary-orange);">Est: Rp 0</span>
+                    </div>
+                    <div id="list-wishlist"></div>
                 </div>
             </div>
 
@@ -545,6 +618,29 @@
                 <div class="form-card">
                     <h3>Daftar Dompet & Saldo Aktif</h3>
                     <ul id="modal-method-list" class="transaction-list" style="margin-top: 10px;"></ul>
+                </div>
+            </div>
+
+            <!-- SUB-9: KARTU MEMBER (DIAKSES DARI BOTTOM NAV) -->
+            <div id="sub-member" class="subpage-content" style="display: none;">
+                <div class="form-card">
+                    <h3>Tambah Kartu Member</h3>
+                    <p class="sub-info" style="margin-bottom: 15px;">Simpan screenshot barcode Alfamidi, Indogrosir, atau kartu diskon lainnya agar cepat di-scan di kasir.</p>
+                    <div class="input-group">
+                        <label>Nama Kartu / Toko</label>
+                        <input type="text" id="new-member-name" placeholder="Misal: Alfamidi...">
+                    </div>
+                    <div class="input-group">
+                        <label>Upload Barcode / QR Code</label>
+                        <input type="file" id="new-member-file" accept="image/png, image/jpeg, image/jpg, image/webp" style="padding: 10px;">
+                        <p style="font-size: 0.72rem; color: var(--income-green); margin-top: 4px; font-weight: 600;">*Otomatis dikompres ringan dengan garis barcode tetap tajam untuk scan kasir.</p>
+                    </div>
+                    <button class="btn btn-income" style="background-color: var(--suit-slate);" onclick="saveMemberCard()">Simpan Kartu</button>
+                </div>
+                <div class="form-card">
+                    <h3>Dompet Kartu Tersimpan</h3>
+                    <p class="sub-info" style="margin-bottom: 12px;">Ketuk gambar barcode untuk memperbesar layar penuh.</p>
+                    <div id="member-card-list" class="member-grid"></div>
                 </div>
             </div>
         </div>
@@ -579,6 +675,26 @@
             <span>Member</span>
         </button>
     </nav>
+
+    <!-- ==================== BOTTOM SHEET: BACKUP & RESTORE JSON ==================== -->
+    <div id="backupModal" class="sheet-overlay" onclick="if(event.target.id==='backupModal') closeBackupModal()">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-header" style="margin-bottom: 12px;">
+                <h3>Backup & Restore Data</h3>
+                <span class="close-modal" onclick="closeBackupModal()">×</span>
+            </div>
+            <p class="sub-info" style="margin-bottom: 16px;">Simpan cadangan penuh (`.json`) sebelum update aplikasi atau pindah HP agar semua transaksi, dompet, celengan, hutang-piutang, titipan, dan kartu member tetap aman.</p>
+            
+            <button type="button" class="btn btn-income" style="background-color: var(--aki-navy); margin-bottom: 16px;" onclick="exportFullBackupJSON()">⬇️ Download Full Backup (.JSON)</button>
+
+            <div class="backup-restore-box">
+                <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 6px;">Pulihkan Data dari File Backup (.JSON)</label>
+                <input type="file" id="restore-json-file" accept=".json,application/json" style="width:100%; padding: 10px; border: 1.5px dashed var(--border-color); border-radius: 12px; font-size: 0.82rem; margin-bottom: 10px;">
+                <button type="button" class="btn btn-income" style="background-color: var(--primary-orange);" onclick="restoreFullBackupJSON()">⬆️ Restore Data Sekarang</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ==================== BOTTOM SHEET: CATAT TRANSAKSI ==================== -->
     <div id="txModal" class="sheet-overlay" onclick="closeTxModalOnBackdrop(event)">
@@ -701,7 +817,7 @@
             <!-- FORM MUTASI -->
             <div id="card-transfer" style="display: none;">
                 <form id="form-transfer">
-                    <p class="sub-info" style="margin-bottom: 15px;">Mutasi saldo antar dompet tidak memengaruhi grafik analisis maupun total saldo.</p>
+                    <p class="sub-info" style="margin-bottom: 15px;">Mutasi saldo antar dompet tidak memengaruhi total saldo. Biaya admin otomatis masuk ke kategori Kebutuhan.</p>
                     <div class="input-group-row">
                         <div class="input-group">
                             <label>Jumlah</label>
