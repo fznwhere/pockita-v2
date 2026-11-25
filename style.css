@@ -18,11 +18,27 @@
     --suit-slate: #3D5265;         /* Kishibe's Suit Slate */
     --border-color: #EAECEF;       
     --card-shadow: 0 10px 30px rgba(232, 93, 4, 0.07); 
+    accent-color: var(--primary-orange);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-body { background-color: var(--bg-app); color: var(--text-main); display: flex; justify-content: center; padding: 16px 12px 72px 12px; }
-.app-container { width: 100%; max-width: 500px; } 
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button, a, select, input, [onclick] {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+button:focus, button:focus-visible,
+a:focus, a:focus-visible,
+select:focus-visible {
+    outline: none;
+} 
 
 /* HEADER & MONTH PICKER (TANPA KOTAK) */
 .app-header { margin-bottom: 18px; }

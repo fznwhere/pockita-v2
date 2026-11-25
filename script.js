@@ -1,34 +1,13 @@
-let transactions = JSON.parse(localStorage.getItem('pockita_tx')) || [];
-let recurringTemplates = JSON.parse(localStorage.getItem('pockita_recur')) || [];
-let savingsGoals = JSON.parse(localStorage.getItem('pockita_goals')) || [];
-let debtsData = JSON.parse(localStorage.getItem('pockita_debts')) || [];
-let titipanData = JSON.parse(localStorage.getItem('pockita_titipan')) || []; 
-let recurringAppliedMonths = JSON.parse(localStorage.getItem('pockita_applied_months')) || [];
-let isBalanceHidden = JSON.parse(localStorage.getItem('pockita_hide_balance')) || false; 
-let memberCards = JSON.parse(localStorage.getItem('pockita_members')) || [];
-let cycleConfig = JSON.parse(localStorage.getItem('pockita_cycle')) || null;
-let cooldownItems = JSON.parse(localStorage.getItem('pockita_cooldown')) || [];
-let wishlistItems = JSON.parse(localStorage.getItem('pockita_wishlist')) || [];
-let ratioConfig = JSON.parse(localStorage.getItem('pockita_ratio_mode')) || { preset: '50-30-20', need: 50, want: 30, save: 20 };
-
-let pockitaMethods = JSON.parse(localStorage.getItem('pockita_custom_methods')) || {
-    'Cash': '', 'BCA': '', 'Mandiri': '', 'DANA': '', 'GoPay': '', 'ShopeePay': '', 'Koin': ''
-};
-if (!pockitaMethods.hasOwnProperty('Mandiri')) pockitaMethods['Mandiri'] = '';
-if (!pockitaMethods.hasOwnProperty('ShopeePay')) pockitaMethods['ShopeePay'] = '';
-if (!pockitaMethods.hasOwnProperty('Koin')) pockitaMethods['Koin'] = '';
-safeSaveStorage('pockita_custom_methods', JSON.stringify(pockitaMethods));
-
-let savedSources = new Set(JSON.parse(localStorage.getItem('pockita_sources')) || []);
-let savedDetails = new Set(JSON.parse(localStorage.getItem('pockita_details')) || []);
-
-let chartTargetObj = null; let chartRealisasiObj = null; let chartKomparasiObj = null;
-let editingTxId = null; let currentHistoryMode = 'bulan'; 
-let balancesByMethodCache = {}; let grandTotalCache = 0;
-let searchDebounceTimer = null; let isHistoryCalVisible = true;
-
-const iconEdit = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
-const iconDelete = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+function safeReadJSON(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (raw === null || raw === undefined || raw === '') return fallback;
+        const parsed = JSON.parse(raw);
+        return parsed !== null ? parsed : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
 
 function safeSaveStorage(key, value) {
     try {
@@ -50,13 +29,59 @@ function escapeHTML(str) {
         .replace(/'/g, ''');
 }
 
+function onSubmit(id, handler) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('submit', handler);
+}
+
+let transactions = safeReadJSON('pockita_tx', []);
+let recurringTemplates = safeReadJSON('pockita_recur', []);
+let savingsGoals = safeReadJSON('pockita_goals', []);
+let debtsData = safeReadJSON('pockita_debts', []);
+let titipanData = safeReadJSON('pockita_titipan', []);
+let recurringAppliedMonths = safeReadJSON('pockita_applied_months', []);
+let isBalanceHidden = Boolean(safeReadJSON('pockita_hide_balance', false));
+let memberCards = safeReadJSON('pockita_members', []);
+let cycleConfig = safeReadJSON('pockita_cycle', null);
+let cooldownItems = safeReadJSON('pockita_cooldown', []);
+let wishlistItems = safeReadJSON('pockita_wishlist', []);
+let ratioConfig = safeReadJSON('pockita_ratio_mode', { preset: '50-30-20', need: 50, want: 30, save: 20 });
+
+let pockitaMethods = safeReadJSON('pockita_custom_methods', {
+    'Cash': '', 'BCA': '', 'Mandiri': '', 'DANA': '', 'GoPay': '', 'ShopeePay': '', 'Koin': ''
+});
+if (!pockitaMethods || typeof pockitaMethods !== 'object') {
+    pockitaMethods = { 'Cash': '', 'BCA': '', 'Mandiri': '', 'DANA': '', 'GoPay': '', 'ShopeePay': '', 'Koin': '' };
+}
+if (!Object.prototype.hasOwnProperty.call(pockitaMethods, 'Mandiri')) pockitaMethods['Mandiri'] = '';
+if (!Object.prototype.hasOwnProperty.call(pockitaMethods, 'ShopeePay')) pockitaMethods['ShopeePay'] = '';
+if (!Object.prototype.hasOwnProperty.call(pockitaMethods, 'Koin')) pockitaMethods['Koin'] = '';
+safeSaveStorage('pockita_custom_methods', JSON.stringify(pockitaMethods));
+
+let savedSources = new Set(safeReadJSON('pockita_sources', []));
+let savedDetails = new Set(safeReadJSON('pockita_details', []));
+
+let chartTargetObj = null;
+let chartRealisasiObj = null;
+let chartKomparasiObj = null;
+let editingTxId = null;
+let currentHistoryMode = 'bulan';
+let balancesByMethodCache = {};
+let grandTotalCache = 0;
+let searchDebounceTimer = null;
+let isHistoryCalVisible = true;
+
+const iconEdit = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+const iconDelete = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+
 // ==================== NAVIGASI UTAMA & SUB-HALAMAN ====================
 function switchMainView(viewName) {
     closeSubpage(false);
     document.querySelectorAll('.main-view').forEach(v => v.style.display = 'none');
     document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
 
-    document.getElementById(`view-${viewName}`).style.display = 'block';
+    const targetView = document.getElementById(`view-${viewName}`);
+    if (targetView) targetView.style.display = 'block';
     const navBtn = document.getElementById(`nav-${viewName}`);
     if (navBtn) navBtn.classList.add('active');
 
@@ -71,11 +96,15 @@ function switchMainView(viewName) {
 function openSubpage(subKey, title) {
     document.querySelectorAll('.main-view').forEach(v => v.style.display = 'none');
     document.querySelectorAll('.subpage-content').forEach(s => s.style.display = 'none');
-    document.getElementById('bottom-nav').style.display = 'none';
+    const bottomNav = document.getElementById('bottom-nav');
+    if (bottomNav) bottomNav.style.display = 'none';
 
-    document.getElementById('subpage-title').innerText = title;
-    document.getElementById('subpage-container').style.display = 'block';
-    document.getElementById(`sub-${subKey}`).style.display = 'block';
+    const titleEl = document.getElementById('subpage-title');
+    if (titleEl) titleEl.innerText = title;
+    const containerEl = document.getElementById('subpage-container');
+    if (containerEl) containerEl.style.display = 'block';
+    const subEl = document.getElementById(`sub-${subKey}`);
+    if (subEl) subEl.style.display = 'block';
 
     if (subKey === 'daily') renderDailyCyclePage();
     if (subKey === 'member') renderMemberCards();
@@ -87,14 +116,18 @@ function openSubpage(subKey, title) {
 }
 
 function closeSubpage(returnHome = true) {
-    document.getElementById('subpage-container').style.display = 'none';
+    const containerEl = document.getElementById('subpage-container');
+    if (containerEl) containerEl.style.display = 'none';
     document.querySelectorAll('.subpage-content').forEach(s => s.style.display = 'none');
-    document.getElementById('bottom-nav').style.display = 'flex';
+    const bottomNav = document.getElementById('bottom-nav');
+    if (bottomNav) bottomNav.style.display = 'flex';
     if (returnHome) {
         document.querySelectorAll('.main-view').forEach(v => v.style.display = 'none');
-        document.getElementById('view-home').style.display = 'block';
+        const homeEl = document.getElementById('view-home');
+        if (homeEl) homeEl.style.display = 'block';
         document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('nav-home').classList.add('active');
+        const navHome = document.getElementById('nav-home');
+        if (navHome) navHome.classList.add('active');
     }
 }
 
@@ -106,11 +139,13 @@ function jumpToWalletManager(e) {
 
 // ==================== BACKUP & RESTORE JSON ====================
 function openBackupModal() {
-    document.getElementById('backupModal').style.display = 'flex';
+    const modal = document.getElementById('backupModal');
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeBackupModal() {
-    document.getElementById('backupModal').style.display = 'none';
+    const modal = document.getElementById('backupModal');
+    if (modal) modal.style.display = 'none';
 }
 
 function exportFullBackupJSON() {
@@ -154,7 +189,7 @@ function exportFullBackupJSON() {
 
 function restoreFullBackupJSON() {
     const fileInput = document.getElementById('restore-json-file');
-    if (!fileInput.files || !fileInput.files[0]) {
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
         return alert("Pilih file backup .json terlebih dahulu!");
     }
 
@@ -214,7 +249,8 @@ function restoreFullBackupJSON() {
             closeBackupModal();
             initRatioUI();
             renderApp();
-            if (document.getElementById('view-analysis').style.display === 'block') renderCharts();
+            const analysisView = document.getElementById('view-analysis');
+            if (analysisView && analysisView.style.display === 'block') renderCharts();
             alert("Data berhasil dipulihkan!");
         } catch (err) {
             alert("Gagal membaca file JSON. Pastikan file tidak rusak.");
@@ -225,27 +261,31 @@ function restoreFullBackupJSON() {
 
 // ==================== BOTTOM SHEET TRANSAKSI ====================
 function openTxModal(defaultType = 'expense') {
-    document.getElementById('txModal').style.display = 'flex';
+    const modal = document.getElementById('txModal');
+    if (modal) modal.style.display = 'flex';
     if (editingTxId === null) {
-        document.getElementById('tx-sheet-title').innerText = 'Catat Transaksi';
+        const title = document.getElementById('tx-sheet-title');
+        if (title) title.innerText = 'Catat Transaksi';
         switchForm(defaultType);
     }
 }
 
 function closeTxModal() {
-    document.getElementById('txModal').style.display = 'none';
+    const modal = document.getElementById('txModal');
+    if (modal) modal.style.display = 'none';
     if (editingTxId !== null) {
         resetFormButtons();
-        document.getElementById('form-pemasukan').reset();
-        document.getElementById('form-pengeluaran').reset();
-        document.getElementById('form-transfer').reset();
+        ['form-pemasukan', 'form-pengeluaran', 'form-transfer'].forEach(id => {
+            const f = document.getElementById(id);
+            if (f) f.reset();
+        });
         clearMoodSelection();
         setDefaultDateTime();
     }
 }
 
 function closeTxModalOnBackdrop(e) {
-    if (e.target.id === 'txModal') closeTxModal();
+    if (e.target && e.target.id === 'txModal') closeTxModal();
 }
 
 function switchForm(type) {
@@ -269,6 +309,7 @@ function switchDebtForm(type) {
 // ==================== MOOD TAGS & COOLDOWN TIMER + NOTIFIKASI ====================
 function selectMoodTag(btn, tag) {
     const hiddenInput = document.getElementById('out-mood-tag');
+    if (!hiddenInput) return;
     if (btn.classList.contains('selected')) {
         btn.classList.remove('selected');
         hiddenInput.value = '';
@@ -286,9 +327,11 @@ function clearMoodSelection() {
 }
 
 function toggleCooldownOption() {
-    const cat = document.getElementById('out-kategori').value;
+    const catEl = document.getElementById('out-kategori');
     const box = document.getElementById('cooldown-action-box');
-    box.style.display = (cat === 'keinginan' && editingTxId === null) ? 'block' : 'none';
+    if (catEl && box) {
+        box.style.display = (catEl.value === 'keinginan' && editingTxId === null) ? 'block' : 'none';
+    }
 }
 
 async function scheduleCooldownNotification(item) {
@@ -296,7 +339,6 @@ async function scheduleCooldownNotification(item) {
     const title = '⏳ Waktu Tunggu 15 Menit Selesai';
     const body = `Masih ingin beli "${item.detail}" (Rp ${formatRupiah(item.amount)})? Buka Pockita untuk putuskan.`;
 
-    // 1. Jika jalan di Capacitor Android dengan LocalNotifications terpasang
     try {
         const capLocalNotif = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
         if (capLocalNotif) {
@@ -313,9 +355,8 @@ async function scheduleCooldownNotification(item) {
                 return;
             }
         }
-    } catch (e) { /* lanjut fallback */ }
+    } catch (e) {}
 
-    // 2. Fallback Web Notification API
     if ('Notification' in window) {
         if (Notification.permission === 'default') {
             await Notification.requestPermission();
@@ -425,7 +466,7 @@ function renderCooldownWidget() {
 setInterval(() => { if (cooldownItems.length > 0) renderCooldownWidget(); }, 1000);
 
 // ==================== SIKLUS UANG SAKU MINIM (BATAS HARIAN) ====================
-document.getElementById('form-cycle').addEventListener('submit', function(e) {
+onSubmit('form-cycle', function(e) {
     e.preventDefault();
     const budget = parseUang(document.getElementById('cycle-budget').value);
     const days = parseInt(document.getElementById('cycle-days').value) || 7;
@@ -442,7 +483,8 @@ document.getElementById('form-cycle').addEventListener('submit', function(e) {
 
 function fillCycleFromBalance(e) {
     e.preventDefault();
-    document.getElementById('cycle-budget').value = formatRupiah(Math.max(0, grandTotalCache));
+    const el = document.getElementById('cycle-budget');
+    if (el) el.value = formatRupiah(Math.max(0, grandTotalCache));
 }
 
 function calculateDailyStats() {
@@ -450,10 +492,9 @@ function calculateDailyStats() {
     const deadAmount = Math.round(cycleConfig.budget * (cycleConfig.deadPct / 100));
     const usableBudget = Math.max(0, cycleConfig.budget - deadAmount);
 
-    // Kecualikan setoran Celengan (goalId / tabungan) & Hutang/Piutang (debtId) agar tidak memotong jatah makan harian
     const usedInCycle = transactions
         .filter(tx => {
-            if (tx.date < cycleConfig.startDate) return false;
+            if (!tx.date || tx.date < cycleConfig.startDate) return false;
             if (tx.type === 'expense') {
                 if (tx.goalId || tx.debtId) return false;
                 if ((tx.category || '').toLowerCase() === 'tabungan') return false;
@@ -516,6 +557,7 @@ function renderHomeDailyWidget() {
 function renderDailyCyclePage() {
     const box = document.getElementById('daily-summary-box');
     const stats = calculateDailyStats();
+    if (!box) return;
     if (!stats) {
         box.innerHTML = '';
         return;
@@ -549,7 +591,8 @@ const DEFAULT_SIM_ITEMS = [
     { id: 'sim_6', label: 'Print, Belajar & Keperluan Lain', value: 0, max: 300000 }
 ];
 
-let simItems = JSON.parse(localStorage.getItem('pockita_sim_items')) || JSON.parse(JSON.stringify(DEFAULT_SIM_ITEMS));
+let simItems = safeReadJSON('pockita_sim_items', JSON.parse(JSON.stringify(DEFAULT_SIM_ITEMS)));
+if (!Array.isArray(simItems)) simItems = JSON.parse(JSON.stringify(DEFAULT_SIM_ITEMS));
 
 function saveSimState() {
     safeSaveStorage('pockita_sim_items', JSON.stringify(simItems));
@@ -675,7 +718,7 @@ function resetSimulatorItems() {
 }
 
 // ==================== DAFTAR BELANJA (WISHLIST) ====================
-document.getElementById('form-wishlist').addEventListener('submit', function(e) {
+onSubmit('form-wishlist', function(e) {
     e.preventDefault();
     const name = document.getElementById('wish-nama').value.trim();
     const price = parseUang(document.getElementById('wish-harga').value);
@@ -762,28 +805,36 @@ function renderWishlist() {
 function toggleBalance(e) {
     e.stopPropagation();
     isBalanceHidden = !isBalanceHidden;
-    safeSaveStorage('pockita_hide_balance', isBalanceHidden);
+    safeSaveStorage('pockita_hide_balance', JSON.stringify(isBalanceHidden));
     renderApp();
 }
 
 function toggleBreakdown(e) {
     if (isBalanceHidden) return; 
     const breakdown = document.getElementById('balance-breakdown');
-    breakdown.style.display = breakdown.style.display === 'none' ? 'block' : 'none';
+    if (breakdown) breakdown.style.display = breakdown.style.display === 'none' ? 'block' : 'none';
 }
 
 function initMonthPicker() {
     const now = new Date();
-    document.getElementById('global-month-picker').value = now.toISOString().slice(0, 7);
-    document.getElementById('filter-hari').value = now.toISOString().split('T')[0];
-    document.getElementById('cycle-start').value = now.toISOString().split('T')[0];
+    const mPicker = document.getElementById('global-month-picker');
+    const fHari = document.getElementById('filter-hari');
+    const cStart = document.getElementById('cycle-start');
+    if (mPicker) mPicker.value = now.toISOString().slice(0, 7);
+    if (fHari) fHari.value = now.toISOString().split('T')[0];
+    if (cStart) cStart.value = now.toISOString().split('T')[0];
 }
 
-function getSelectedMonth() { return document.getElementById('global-month-picker').value; }
+function getSelectedMonth() {
+    const mPicker = document.getElementById('global-month-picker');
+    return (mPicker && mPicker.value) ? mPicker.value : new Date().toISOString().slice(0, 7);
+}
+
 function changeGlobalMonth() {
     setHistoryMode('bulan');
     renderHistoryCalendar();
-    if (document.getElementById('view-analysis').style.display === 'block') renderCharts();
+    const analysisView = document.getElementById('view-analysis');
+    if (analysisView && analysisView.style.display === 'block') renderCharts();
 }
 
 function attachMoneyFormat() {
@@ -796,8 +847,8 @@ function formatUangLive(e) {
     let val = e.target.value.replace(/[^0-9]/g, '');
     e.target.value = val !== '' ? new Intl.NumberFormat('id-ID').format(val) : '';
 }
-function parseUang(str) { return parseInt(str.toString().replace(/[^0-9]/g, '')) || 0; }
-function formatRupiah(angka) { return new Intl.NumberFormat('id-ID').format(angka); }
+function parseUang(str) { return parseInt((str || '').toString().replace(/[^0-9]/g, '')) || 0; }
+function formatRupiah(angka) { return new Intl.NumberFormat('id-ID').format(angka || 0); }
 function formatK(angka) {
     return angka >= 1000 ? ((angka % 1000 === 0) ? (angka / 1000) + 'K' : (angka / 1000).toFixed(1).replace('.0', '') + 'K') : angka.toString();
 }
@@ -970,7 +1021,7 @@ function renderMemberCards() {
 }
 
 // ==================== UANG TITIPAN ====================
-document.getElementById('form-titipan').addEventListener('submit', function(e) {
+onSubmit('form-titipan', function(e) {
     e.preventDefault();
     const title = document.getElementById('titipan-judul').value;
     const modal = parseUang(document.getElementById('titipan-modal').value);
@@ -986,7 +1037,7 @@ document.getElementById('form-titipan').addEventListener('submit', function(e) {
 
 window.toggleTitipan = function(id) {
     let el = document.getElementById('titipan-content-' + id);
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
 window.tambahItemTitipan = function(e, id) {
@@ -999,7 +1050,10 @@ window.tambahItemTitipan = function(e, id) {
         session.items.push({ name, price });
         safeSaveStorage('pockita_titipan', JSON.stringify(titipanData));
         renderApp();
-        setTimeout(() => { document.getElementById(`titipan-content-${id}`).style.display = 'block'; }, 50);
+        setTimeout(() => {
+            const el = document.getElementById(`titipan-content-${id}`);
+            if (el) el.style.display = 'block';
+        }, 50);
     }
 }
 
@@ -1009,7 +1063,10 @@ window.hapusItemTitipan = function(id, index) {
         session.items.splice(index, 1);
         safeSaveStorage('pockita_titipan', JSON.stringify(titipanData));
         renderApp();
-        setTimeout(() => { document.getElementById(`titipan-content-${id}`).style.display = 'block'; }, 50);
+        setTimeout(() => {
+            const el = document.getElementById(`titipan-content-${id}`);
+            if (el) el.style.display = 'block';
+        }, 50);
     }
 }
 
@@ -1087,7 +1144,6 @@ function checkAndApplyRecurring() {
     recurringTemplates.forEach(tpl => {
         if (tpl.active === false) return;
         const key = `${realMonth}_${tpl.id}`;
-        // Kompatibilitas dengan format lama (jika bulan ini sudah pernah diterapkan secara global)
         if (recurringAppliedMonths.includes(realMonth) || recurringAppliedMonths.includes(key)) return;
 
         const targetDate = getScheduledDateInMonth(realMonth, tpl.dayOfMonth || 1);
@@ -1145,12 +1201,12 @@ function renderHistoryCalendar() {
         titleEl.innerText = 'Kalender ' + monthObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     }
 
-    const firstWeekday = monthObj.getDay(); // 0 = Minggu
+    const firstWeekday = monthObj.getDay();
     const daysInMonth = new Date(year, month, 0).getDate();
     const todayStr = new Date().toISOString().split('T')[0];
-    const selectedDayStr = currentHistoryMode === 'hari' ? document.getElementById('filter-hari').value : '';
+    const fHariEl = document.getElementById('filter-hari');
+    const selectedDayStr = (currentHistoryMode === 'hari' && fHariEl) ? fHariEl.value : '';
 
-    // Kumpulkan indikator transaksi per tanggal di bulan aktif
     const dayFlags = {};
     transactions.forEach(tx => {
         if (!tx.date || !tx.date.startsWith(activeMonth)) return;
@@ -1188,8 +1244,8 @@ function renderHistoryCalendar() {
 
 function selectCalendarDate(dateStr) {
     const hariInput = document.getElementById('filter-hari');
+    if (!hariInput) return;
     if (currentHistoryMode === 'hari' && hariInput.value === dateStr) {
-        // Ketuk ulang tanggal yang sama -> kembali ke mode Bulanan
         setHistoryMode('bulan');
         return;
     }
@@ -1204,10 +1260,14 @@ function onFilterDateChange() {
 
 function setHistoryMode(mode) {
     currentHistoryMode = mode;
-    document.getElementById('btn-mode-semua').className = mode === 'semua' ? 'time-btn active' : 'time-btn';
-    document.getElementById('btn-mode-bulan').className = mode === 'bulan' ? 'time-btn active' : 'time-btn';
-    document.getElementById('btn-mode-hari').className = mode === 'hari' ? 'time-btn active' : 'time-btn';
-    document.getElementById('filter-hari').style.display = mode === 'hari' ? 'inline-block' : 'none';
+    const bSemua = document.getElementById('btn-mode-semua');
+    const bBulan = document.getElementById('btn-mode-bulan');
+    const bHari = document.getElementById('btn-mode-hari');
+    const fHari = document.getElementById('filter-hari');
+    if (bSemua) bSemua.className = mode === 'semua' ? 'time-btn active' : 'time-btn';
+    if (bBulan) bBulan.className = mode === 'bulan' ? 'time-btn active' : 'time-btn';
+    if (bHari) bHari.className = mode === 'hari' ? 'time-btn active' : 'time-btn';
+    if (fHari) fHari.style.display = mode === 'hari' ? 'inline-block' : 'none';
     renderHistoryCalendar();
     renderHistoryList();
 }
@@ -1244,20 +1304,21 @@ function matchesHistorySearch(tx, rawSearch) {
     );
 }
 
-// ==================== RENDER ITEM & DAFTAR RIWAYAT (TERPISAH AGAR CEPAT) ====================
+// ==================== RENDER ITEM & DAFTAR RIWAYAT ====================
 function buildTransactionItemHTML(tx, showDate = false) {
-    let isAuto = tx.desc.startsWith('Auto: ');
-    let isTarget = tx.desc.startsWith('Target: ');
-    let isBeriPiutang = tx.desc.startsWith('Memberi Piutang: ');
-    let isTerimaPiutang = tx.desc.startsWith('Terima Piutang: ');
-    let isTerimaHutang = tx.desc.startsWith('Menerima Hutang: ');
-    let isBayarHutang = tx.desc.startsWith('Bayar Hutang: ');
+    const descStr = tx.desc || '';
+    let isAuto = descStr.startsWith('Auto: ');
+    let isTarget = descStr.startsWith('Target: ');
+    let isBeriPiutang = descStr.startsWith('Memberi Piutang: ');
+    let isTerimaPiutang = descStr.startsWith('Terima Piutang: ');
+    let isTerimaHutang = descStr.startsWith('Menerima Hutang: ');
+    let isBayarHutang = descStr.startsWith('Bayar Hutang: ');
     let isTransfer = tx.type === 'transfer';
     
     let isPiutang = isBeriPiutang || isTerimaPiutang;
     let isHutang = isTerimaHutang || isBayarHutang;
 
-    let cleanDesc = tx.desc.replace('Auto: ', '').replace('Target: ', '').replace('Memberi Piutang: ', '').replace('Terima Piutang: ', '').replace('Menerima Hutang: ', '').replace('Bayar Hutang: ', '');
+    let cleanDesc = descStr.replace('Auto: ', '').replace('Target: ', '').replace('Memberi Piutang: ', '').replace('Terima Piutang: ', '').replace('Menerima Hutang: ', '').replace('Bayar Hutang: ', '');
     if (tx.category === 'biaya admin') {
         cleanDesc = cleanDesc.replace('Biaya Admin Mutasi: ', '').replace(' ke ', ' ➡ ');
     }
@@ -1332,7 +1393,7 @@ function getFilteredHistoryTransactions() {
     if (isAllTimeFlatView) {
         list = transactions.slice();
     } else if (currentHistoryMode === 'bulan') {
-        list = transactions.filter(tx => tx.date.startsWith(activeMonth));
+        list = transactions.filter(tx => tx.date && tx.date.startsWith(activeMonth));
     } else {
         const specificDate = document.getElementById('filter-hari').value;
         list = transactions.filter(tx => tx.date === specificDate);
@@ -1371,7 +1432,6 @@ function renderHistoryList() {
 
     const { list: displayTransactions, rawSearch, isAllTimeFlatView, currentFilter } = getFilteredHistoryTransactions();
 
-    // Hitung Ringkasan Total Hasil Filter
     let sumMasuk = 0;
     let sumKeluar = 0;
     displayTransactions.forEach(tx => {
@@ -1511,52 +1571,57 @@ function renderApp() {
     const saldoEl = document.getElementById('total-saldo');
     const eyeBtn = document.getElementById('btn-toggle-eye');
     const breakdownContainer = document.getElementById('balance-breakdown');
-    breakdownContainer.innerHTML = '';
+    if (breakdownContainer) breakdownContainer.innerHTML = '';
 
     if (isBalanceHidden) {
-        saldoEl.innerText = '***';
-        eyeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
-        breakdownContainer.style.display = 'none'; 
+        if (saldoEl) saldoEl.innerText = '***';
+        if (eyeBtn) eyeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        if (breakdownContainer) breakdownContainer.style.display = 'none'; 
     } else {
-        saldoEl.innerText = formatRupiah(grandTotalSaldo);
-        eyeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-        for (const [method, amount] of Object.entries(balancesByMethod)) {
-            breakdownContainer.innerHTML += `<div class="breakdown-item"><span>${escapeHTML(method)}</span><span>Rp ${formatRupiah(amount)}</span></div>`;
+        if (saldoEl) saldoEl.innerText = formatRupiah(grandTotalSaldo);
+        if (eyeBtn) eyeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        if (breakdownContainer) {
+            for (const [method, amount] of Object.entries(balancesByMethod)) {
+                breakdownContainer.innerHTML += `<div class="breakdown-item"><span>${escapeHTML(method)}</span><span>Rp ${formatRupiah(amount)}</span></div>`;
+            }
         }
     }
 
-    // RENDER 3 TRANSAKSI TERAKHIR DI BERANDA
     const recentTxs = transactions.slice().sort((a, b) => {
         const timeA = new Date((a.date || '') + 'T' + (a.time || '00:00')).getTime() || a.id;
         const timeB = new Date((b.date || '') + 'T' + (b.time || '00:00')).getTime() || b.id;
         return timeB === timeA ? b.id - a.id : timeB - timeA;
     }).slice(0, 3);
 
-    if (recentTxs.length === 0) {
-        homeRecentContainer.innerHTML = `<div class="empty-state" style="padding:12px 0;"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" style="width:46px;height:46px;" alt="Kosong">Belum ada transaksi. Tekan tombol + di bawah untuk mulai mencatat.</div>`;
-    } else {
-        const ulRecent = document.createElement('ul');
-        ulRecent.className = 'transaction-list';
-        recentTxs.forEach(tx => {
-            const li = document.createElement('li');
-            li.className = 'transaction-item';
-            li.innerHTML = buildTransactionItemHTML(tx, true);
-            ulRecent.appendChild(li);
-        });
-        homeRecentContainer.innerHTML = '';
-        homeRecentContainer.appendChild(ulRecent);
+    if (homeRecentContainer) {
+        if (recentTxs.length === 0) {
+            homeRecentContainer.innerHTML = `<div class="empty-state" style="padding:12px 0;"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" style="width:46px;height:46px;" alt="Kosong">Belum ada transaksi. Tekan tombol + di bawah untuk mulai mencatat.</div>`;
+        } else {
+            const ulRecent = document.createElement('ul');
+            ulRecent.className = 'transaction-list';
+            recentTxs.forEach(tx => {
+                const li = document.createElement('li');
+                li.className = 'transaction-item';
+                li.innerHTML = buildTransactionItemHTML(tx, true);
+                ulRecent.appendChild(li);
+            });
+            homeRecentContainer.innerHTML = '';
+            homeRecentContainer.appendChild(ulRecent);
+        }
     }
 
     updateDatalist('sumber-list', savedSources);
     updateDatalist('detail-list', savedDetails);
     populateSelectMethods(); 
 
-    const currentFilter = filterMetode.value; 
-    filterMetode.innerHTML = '<option value="Semua">Semua Dompet</option>';
-    Object.keys(pockitaMethods).forEach(method => {
-        const isSelected = method === currentFilter ? 'selected' : '';
-        filterMetode.innerHTML += `<option value="${escapeHTML(method)}" ${isSelected}>${escapeHTML(method)}</option>`;
-    });
+    if (filterMetode) {
+        const currentFilter = filterMetode.value; 
+        filterMetode.innerHTML = '<option value="Semua">Semua Dompet</option>';
+        Object.keys(pockitaMethods).forEach(method => {
+            const isSelected = method === currentFilter ? 'selected' : '';
+            filterMetode.innerHTML += `<option value="${escapeHTML(method)}" ${isSelected}>${escapeHTML(method)}</option>`;
+        });
+    }
 
     renderHistoryCalendar();
     renderHistoryList();
@@ -1650,7 +1715,6 @@ function simpanTransaksi(type, idAmount, idDesc, idDate, idTime, idMethod, idKat
     if (amount <= 0) return;
     if (type === 'transfer' && method === methodTo) return alert("Pilih dompet tujuan yang berbeda!");
 
-    // Konfirmasi ringan jika saldo dompet asal tidak mencukupi (saat input baru)
     if (editingTxId === null && (type === 'expense' || type === 'transfer')) {
         const currentWalletBal = balancesByMethodCache[method] || 0;
         const totalNeeded = type === 'transfer' ? (amount + adminFee) : amount;
@@ -1690,18 +1754,20 @@ function simpanTransaksi(type, idAmount, idDesc, idDate, idTime, idMethod, idKat
     setDefaultDateTime();
     closeTxModal();
     renderApp();
-    if (document.getElementById('view-analysis').style.display === 'block') renderCharts();
+    const analysisView = document.getElementById('view-analysis');
+    if (analysisView && analysisView.style.display === 'block') renderCharts();
 }
 
-document.getElementById('form-pemasukan').addEventListener('submit', function(e) { e.preventDefault(); simpanTransaksi('income', 'in-jumlah', 'in-sumber', 'in-tanggal', 'in-waktu', 'in-metode', null, null, 'in-catatan', null); });
-document.getElementById('form-pengeluaran').addEventListener('submit', function(e) { e.preventDefault(); simpanTransaksi('expense', 'out-jumlah', 'out-detail', 'out-tanggal', 'out-waktu', 'out-metode', 'out-kategori', null, 'out-catatan', null); });
-document.getElementById('form-transfer').addEventListener('submit', function(e) { e.preventDefault(); simpanTransaksi('transfer', 'tf-jumlah', null, 'tf-tanggal', 'tf-waktu', 'tf-metode-dari', null, 'tf-metode-ke', 'tf-catatan', 'tf-admin'); });
+onSubmit('form-pemasukan', function(e) { e.preventDefault(); simpanTransaksi('income', 'in-jumlah', 'in-sumber', 'in-tanggal', 'in-waktu', 'in-metode', null, null, 'in-catatan', null); });
+onSubmit('form-pengeluaran', function(e) { e.preventDefault(); simpanTransaksi('expense', 'out-jumlah', 'out-detail', 'out-tanggal', 'out-waktu', 'out-metode', 'out-kategori', null, 'out-catatan', null); });
+onSubmit('form-transfer', function(e) { e.preventDefault(); simpanTransaksi('transfer', 'tf-jumlah', null, 'tf-tanggal', 'tf-waktu', 'tf-metode-dari', null, 'tf-metode-ke', 'tf-catatan', 'tf-admin'); });
 
 function hapusTransaksi(id) {
     if (confirm("Hapus transaksi ini?")) {
         transactions = transactions.filter(tx => tx.id !== id);
         renderApp();
-        if (document.getElementById('view-analysis').style.display === 'block') renderCharts();
+        const analysisView = document.getElementById('view-analysis');
+        if (analysisView && analysisView.style.display === 'block') renderCharts();
     }
 }
 
@@ -1754,19 +1820,18 @@ function applyCustomRatio() {
 function renderCharts() {
     initRatioUI();
     const activeMonth = getSelectedMonth();
-    const monthlyTxAll = transactions.filter(tx => tx.date.startsWith(activeMonth));
+    const monthlyTxAll = transactions.filter(tx => tx.date && tx.date.startsWith(activeMonth));
     const monthlyTx = monthlyTxAll.filter(tx => tx.type !== 'transfer');
     let totalPemasukanBulanIni = monthlyTx.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
 
     let pengeluaranAktual = { kebutuhan: 0, keinginan: 0, tabungan: 0, biayaadmin: 0 };
     monthlyTx.filter(tx => tx.type === 'expense').forEach(tx => {
         const cat = (tx.category && typeof tx.category === 'string') ? tx.category.toLowerCase() : 'kebutuhan';
-        if (pengeluaranAktual.hasOwnProperty(cat)) pengeluaranAktual[cat] += tx.amount;
+        if (Object.prototype.hasOwnProperty.call(pengeluaranAktual, cat)) pengeluaranAktual[cat] += tx.amount;
         else if (cat === 'biaya admin') pengeluaranAktual.biayaadmin += tx.amount;
         else pengeluaranAktual.kebutuhan += tx.amount;
     });
 
-    // Tambahkan biaya admin dari mutasi terpadu ke Kebutuhan
     monthlyTxAll.filter(tx => tx.type === 'transfer').forEach(tx => {
         if ((tx.adminFee || 0) > 0) pengeluaranAktual.biayaadmin += tx.adminFee;
     });
@@ -1787,11 +1852,15 @@ function renderCharts() {
     renderMoodInsights(monthlyTx);
 
     if (typeof Chart === 'undefined') {
-        document.getElementById('empty-target-chart').style.display = 'flex';
-        document.getElementById('empty-target-chart').innerHTML = `<span style="font-size:0.8rem; color:var(--expense-red); font-weight:700;">File chart.umd.min.js belum terpasang di assets/js/</span>`;
-        document.getElementById('chartTarget').style.display = 'none';
-        document.getElementById('empty-realisasi-chart').style.display = 'none';
-        document.getElementById('chartRealisasi').style.display = 'none';
+        const emptyTarget = document.getElementById('empty-target-chart');
+        if (emptyTarget) {
+            emptyTarget.style.display = 'flex';
+            emptyTarget.innerHTML = `<span style="font-size:0.8rem; color:var(--expense-red); font-weight:700;">File chart.umd.min.js belum terpasang di folder assets/js/</span>`;
+        }
+        const c1 = document.getElementById('chartTarget');
+        const c2 = document.getElementById('chartRealisasi');
+        if (c1) c1.style.display = 'none';
+        if (c2) c2.style.display = 'none';
         return;
     }
 
@@ -1885,6 +1954,8 @@ function updateStatusBadge(catName, aktual, target) {
     const imgEl = document.getElementById(`img-${catName}`);
     const maxNominalEl = document.getElementById(`max-${catName}`);
     const frontBg = document.getElementById(`bg-${catName}`);
+    if (!badge || !imgEl || !maxNominalEl || !frontBg) return;
+
     maxNominalEl.innerText = formatK(target);
 
     let defaultColor = "var(--primary-orange)";
@@ -1907,18 +1978,19 @@ function updateStatusBadge(catName, aktual, target) {
 }
 
 function renderBarChartKomparasi() {
+    if (typeof Chart === 'undefined') return;
     let monthsLabel = []; let expensesData = []; let incomesData = []; let sisaData = [];
     for (let i = 5; i >= 0; i--) {
         let d = new Date(); d.setMonth(d.getMonth() - i);
         let mStr = d.toISOString().slice(0, 7); 
         monthsLabel.push(d.toLocaleString('id-ID', { month: 'short', year: 'numeric' }));
         
-        let outSum = transactions.filter(tx => tx.date.startsWith(mStr)).reduce((s, tx) => {
+        let outSum = transactions.filter(tx => tx.date && tx.date.startsWith(mStr)).reduce((s, tx) => {
             if (tx.type === 'expense') return s + tx.amount;
             if (tx.type === 'transfer') return s + (tx.adminFee || 0);
             return s;
         }, 0);
-        let inSum = transactions.filter(tx => tx.date.startsWith(mStr) && tx.type === 'income').reduce((s, tx) => s + tx.amount, 0);
+        let inSum = transactions.filter(tx => tx.date && tx.date.startsWith(mStr) && tx.type === 'income').reduce((s, tx) => s + tx.amount, 0);
         expensesData.push(outSum); incomesData.push(inSum); sisaData.push(inSum - outSum); 
     }
 
@@ -1936,7 +2008,7 @@ function renderBarChartKomparasi() {
 }
 
 // ==================== RENCANA (RUTIN, CELENGAN, HUTANG/PIUTANG) ====================
-document.getElementById('form-berulang').addEventListener('submit', function(e) {
+onSubmit('form-berulang', function(e) {
     e.preventDefault();
     const amount = parseUang(document.getElementById('recur-jumlah').value);
     const category = document.getElementById('recur-kategori').value;
@@ -1949,7 +2021,6 @@ document.getElementById('form-berulang').addEventListener('submit', function(e) 
     recurringTemplates.push(newTpl);
     safeSaveStorage('pockita_recur', JSON.stringify(recurringTemplates));
     
-    // Cek langsung jika jadwal bulan ini sudah lewat atau tepat hari ini
     checkAndApplyRecurring();
     this.reset();
     document.getElementById('recur-tanggal').value = 1;
@@ -1957,7 +2028,7 @@ document.getElementById('form-berulang').addEventListener('submit', function(e) 
     renderApp();
 });
 
-document.getElementById('form-goals').addEventListener('submit', function(e) {
+onSubmit('form-goals', function(e) {
     e.preventDefault();
     const name = document.getElementById('goal-nama').value;
     const target = parseUang(document.getElementById('goal-target').value);
@@ -1968,7 +2039,7 @@ document.getElementById('form-goals').addEventListener('submit', function(e) {
     renderApp();
 });
 
-document.getElementById('form-piutang').addEventListener('submit', function(e) {
+onSubmit('form-piutang', function(e) {
     e.preventDefault();
     const name = document.getElementById('piutang-nama').value;
     const target = parseUang(document.getElementById('piutang-jumlah').value);
@@ -1988,7 +2059,7 @@ document.getElementById('form-piutang').addEventListener('submit', function(e) {
     renderApp();
 });
 
-document.getElementById('form-hutang').addEventListener('submit', function(e) {
+onSubmit('form-hutang', function(e) {
     e.preventDefault();
     const name = document.getElementById('hutang-nama').value;
     const target = parseUang(document.getElementById('hutang-jumlah').value);
@@ -2089,6 +2160,7 @@ function hapusPlan(type, id) {
 }
 
 function renderGroupedDebts(list, container, typeStr) {
+    if (!container) return;
     if (list.length === 0) {
         container.innerHTML = `<div class="empty-state" style="padding: 10px 0;"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" style="width:42px;height:42px;" alt="Kosong">Belum ada daftar ${typeStr}.</div>`;
         return;
@@ -2163,64 +2235,68 @@ function renderPlans() {
     selectHtml += `</select>`;
 
     const listRecur = document.getElementById('list-berulang');
-    listRecur.innerHTML = '';
-    if (recurringTemplates.length === 0) {
-        listRecur.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada langganan rutin.</div>`;
-    } else {
-        recurringTemplates.forEach(t => {
-            let safeCat = t.category ? t.category.toLowerCase() : 'umum';
-            let catColorClass = safeCat === 'kebutuhan' ? 'pill-outline-kebutuhan' : 'pill-outline-keinginan';
-            let isPaused = t.active === false;
-            let schedText = `Tgl ${t.dayOfMonth || 1} • ${t.timeOfDay || '00:01'}`;
-            listRecur.innerHTML += `
-                <li class="plan-item" style="opacity:${isPaused ? '0.6' : '1'};">
-                    <span><b>${escapeHTML(t.name)}</b> • Rp ${formatRupiah(t.amount)}<br>
-                        <div class="pill-container" style="margin-top: 4px;">
-                            <span class="pill-outline ${catColorClass}">${escapeHTML(safeCat.toUpperCase())}</span>
-                            <span class="pill-outline pill-outline-method">${escapeHTML(t.method || 'Cash')}</span>
-                            <span class="pill-outline pill-outline-auto">${schedText}</span>
+    if (listRecur) {
+        listRecur.innerHTML = '';
+        if (recurringTemplates.length === 0) {
+            listRecur.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada langganan rutin.</div>`;
+        } else {
+            recurringTemplates.forEach(t => {
+                let safeCat = t.category ? t.category.toLowerCase() : 'umum';
+                let catColorClass = safeCat === 'kebutuhan' ? 'pill-outline-kebutuhan' : 'pill-outline-keinginan';
+                let isPaused = t.active === false;
+                let schedText = `Tgl ${t.dayOfMonth || 1} • ${t.timeOfDay || '00:01'}`;
+                listRecur.innerHTML += `
+                    <li class="plan-item" style="opacity:${isPaused ? '0.6' : '1'};">
+                        <span><b>${escapeHTML(t.name)}</b> • Rp ${formatRupiah(t.amount)}<br>
+                            <div class="pill-container" style="margin-top: 4px;">
+                                <span class="pill-outline ${catColorClass}">${escapeHTML(safeCat.toUpperCase())}</span>
+                                <span class="pill-outline pill-outline-method">${escapeHTML(t.method || 'Cash')}</span>
+                                <span class="pill-outline pill-outline-auto">${schedText}</span>
+                            </div>
+                        </span>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <button type="button" class="btn-pause-recur ${isPaused ? 'paused' : ''}" onclick="toggleRecurringActive(${t.id})">${isPaused ? 'Aktifkan' : 'Jeda'}</button>
+                            <button class="btn-delete" style="margin:0;" onclick="hapusPlan('recur', ${t.id})">${iconDelete}</button>
                         </div>
-                    </span>
-                    <div style="display:flex; gap:6px; align-items:center;">
-                        <button type="button" class="btn-pause-recur ${isPaused ? 'paused' : ''}" onclick="toggleRecurringActive(${t.id})">${isPaused ? 'Aktifkan' : 'Jeda'}</button>
-                        <button class="btn-delete" style="margin:0;" onclick="hapusPlan('recur', ${t.id})">${iconDelete}</button>
-                    </div>
-                </li>`;
-        });
+                    </li>`;
+            });
+        }
     }
 
     const containerGoals = document.getElementById('list-goals');
-    containerGoals.innerHTML = '';
-    if (savingsGoals.length === 0) {
-        containerGoals.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada target menabung/tagihan.</div>`;
-    } else {
-        savingsGoals.forEach(g => {
-            let collectedAmount = transactions.filter(tx => tx.goalId === g.id).reduce((sum, tx) => sum + tx.amount, 0);
-            const pct = Math.min(Math.round((collectedAmount / g.target) * 100), 100);
-            let specificSelect = selectHtml.replace('<select class=', `<select id="method-add-goal-${g.id}" class=`);
+    if (containerGoals) {
+        containerGoals.innerHTML = '';
+        if (savingsGoals.length === 0) {
+            containerGoals.innerHTML = `<div class="empty-state"><img src="assets/img/pochita-sleep.png" class="empty-state-img empty-neon-orange" alt="Kosong">Belum ada target menabung/tagihan.</div>`;
+        } else {
+            savingsGoals.forEach(g => {
+                let collectedAmount = transactions.filter(tx => tx.goalId === g.id).reduce((sum, tx) => sum + tx.amount, 0);
+                const pct = Math.min(Math.round((collectedAmount / g.target) * 100), 100);
+                let specificSelect = selectHtml.replace('<select class=', `<select id="method-add-goal-${g.id}" class=`);
 
-            let isCompleted = collectedAmount >= g.target;
-            let actionHTML = isCompleted ? 
-                `<span style="color: var(--income-green); font-weight: 800; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">✓ TERCAPAI</span><button class="btn-delete" style="margin:0; width:auto; padding: 0 10px;" onclick="hapusPlan('goal', ${g.id})">${iconDelete}</button>` : 
-                `<input type="text" id="input-add-goal-${g.id}" class="format-uang" placeholder="+ Nominal">${specificSelect}<button class="btn-add-goal" onclick="tambahTabunganGoal(${g.id})">Setor</button><button class="btn-delete" style="margin:0; width:auto; padding: 0 10px;" onclick="hapusPlan('goal', ${g.id})">${iconDelete}</button>`;
+                let isCompleted = collectedAmount >= g.target;
+                let actionHTML = isCompleted ? 
+                    `<span style="color: var(--income-green); font-weight: 800; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">✓ TERCAPAI</span><button class="btn-delete" style="margin:0; width:auto; padding: 0 10px;" onclick="hapusPlan('goal', ${g.id})">${iconDelete}</button>` : 
+                    `<input type="text" id="input-add-goal-${g.id}" class="format-uang" placeholder="+ Nominal">${specificSelect}<button class="btn-add-goal" onclick="tambahTabunganGoal(${g.id})">Setor</button><button class="btn-delete" style="margin:0; width:auto; padding: 0 10px;" onclick="hapusPlan('goal', ${g.id})">${iconDelete}</button>`;
 
-            let safeCat = g.category ? g.category.toLowerCase() : 'tabungan';
-            let catColorClass = safeCat === 'kebutuhan' ? 'pill-outline-kebutuhan' : (safeCat === 'keinginan' ? 'pill-outline-keinginan' : 'pill-outline-tabungan');
+                let safeCat = g.category ? g.category.toLowerCase() : 'tabungan';
+                let catColorClass = safeCat === 'kebutuhan' ? 'pill-outline-kebutuhan' : (safeCat === 'keinginan' ? 'pill-outline-keinginan' : 'pill-outline-tabungan');
 
-            containerGoals.innerHTML += `
-                <div class="goal-box">
-                    <div class="goal-info">
-                        <span><b>${escapeHTML(g.name)}</b> <br>
-                            <div class="pill-container" style="margin-top: 4px;">
-                                <span class="pill-outline ${catColorClass}">${escapeHTML(safeCat.toUpperCase())}</span>
-                            </div>
-                        </span>
-                        <span style="text-align:right;">${pct}%<br><small style="font-weight:normal;">${formatRupiah(collectedAmount)} / ${formatRupiah(g.target)}</small></span>
-                    </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isCompleted ? 'var(--income-green)' : 'var(--primary-orange)'};"></div></div>
-                    <div class="goal-actions" style="margin-top: 12px;">${actionHTML}</div>
-                </div>`;
-        });
+                containerGoals.innerHTML += `
+                    <div class="goal-box">
+                        <div class="goal-info">
+                            <span><b>${escapeHTML(g.name)}</b> <br>
+                                <div class="pill-container" style="margin-top: 4px;">
+                                    <span class="pill-outline ${catColorClass}">${escapeHTML(safeCat.toUpperCase())}</span>
+                                </div>
+                            </span>
+                            <span style="text-align:right;">${pct}%<br><small style="font-weight:normal;">${formatRupiah(collectedAmount)} / ${formatRupiah(g.target)}</small></span>
+                        </div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isCompleted ? 'var(--income-green)' : 'var(--primary-orange)'};"></div></div>
+                        <div class="goal-actions" style="margin-top: 12px;">${actionHTML}</div>
+                    </div>`;
+            });
+        }
     }
 
     renderGroupedDebts(debtsData.filter(d => d.type === 'hutang'), document.getElementById('list-hutang'), 'hutang');
@@ -2239,14 +2315,21 @@ function setDefaultDateTime() {
     const dateStr = now.toISOString().split('T')[0];
     const timeStr = now.toTimeString().split(' ')[0].slice(0, 5);
     
-    document.getElementById('in-tanggal').value = dateStr;
-    document.getElementById('out-tanggal').value = dateStr;
-    if (document.getElementById('tf-tanggal')) document.getElementById('tf-tanggal').value = dateStr;
-    if (document.getElementById('titipan-tanggal')) document.getElementById('titipan-tanggal').value = dateStr;
+    const inTgl = document.getElementById('in-tanggal');
+    const outTgl = document.getElementById('out-tanggal');
+    const tfTgl = document.getElementById('tf-tanggal');
+    const titipTgl = document.getElementById('titipan-tanggal');
+    if (inTgl) inTgl.value = dateStr;
+    if (outTgl) outTgl.value = dateStr;
+    if (tfTgl) tfTgl.value = dateStr;
+    if (titipTgl) titipTgl.value = dateStr;
     
-    document.getElementById('in-waktu').value = timeStr;
-    document.getElementById('out-waktu').value = timeStr;
-    if (document.getElementById('tf-waktu')) document.getElementById('tf-waktu').value = timeStr;
+    const inWkt = document.getElementById('in-waktu');
+    const outWkt = document.getElementById('out-waktu');
+    const tfWkt = document.getElementById('tf-waktu');
+    if (inWkt) inWkt.value = timeStr;
+    if (outWkt) outWkt.value = timeStr;
+    if (tfWkt) tfWkt.value = timeStr;
 }
 
 function exportToExcel() {
@@ -2264,7 +2347,7 @@ function exportToExcel() {
         let tipe = tx.type === 'income' ? 'Pemasukan' : (tx.type === 'transfer' ? 'Mutasi' : 'Pengeluaran');
         let kat = tx.category ? tx.category.toUpperCase() : 'UMUM';
         let tag = tx.moodTag || '-';
-        let dtl = tx.desc.replace(/,/g, " ");
+        let dtl = (tx.desc || '').replace(/,/g, " ");
         if (tx.category === 'biaya admin') dtl = dtl.replace('Biaya Admin Mutasi: ', '').replace(' ke ', ' ➡ ');
         let cttn = tx.catatan ? tx.catatan.replace(/,/g, " ") : "-";
         let method = tx.type === 'transfer' ? `${tx.method} ➡ ${tx.methodTo}` : tx.method;
@@ -2283,14 +2366,26 @@ function exportToExcel() {
     document.body.removeChild(link);
 }
 
-// INISIALISASI SAAT HALAMAN SIAP
-const savedSimIncome = localStorage.getItem('pockita_sim_income');
-if (savedSimIncome && document.getElementById('sim-income')) {
-    document.getElementById('sim-income').value = savedSimIncome;
+// ==================== INISIALISASI AMAN SAAT HALAMAN SIAP ====================
+function bootstrapPockita() {
+    try {
+        const savedSimIncome = localStorage.getItem('pockita_sim_income');
+        const simIncEl = document.getElementById('sim-income');
+        if (savedSimIncome && simIncEl) simIncEl.value = savedSimIncome;
+
+        initMonthPicker();
+        initRatioUI();
+        checkAndApplyRecurring();
+        setDefaultDateTime();
+        renderSimulatorItems();
+        renderApp();
+    } catch (err) {
+        console.error('Pockita init error:', err);
+    }
 }
-initMonthPicker();
-initRatioUI();
-checkAndApplyRecurring();
-setDefaultDateTime();
-renderSimulatorItems();
-renderApp();
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapPockita);
+} else {
+    bootstrapPockita();
+}
